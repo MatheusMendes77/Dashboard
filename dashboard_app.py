@@ -71,6 +71,60 @@ def detectar_outliers_zscore(dados, coluna, threshold=3):
     outliers_mask = z_scores > threshold
     return dados[outliers_mask], outliers_mask
 
+# ========== NOVAS FUNÇÕES PARA CLASSIFICAÇÃO DE CARTAS DE CONTROLE ==========
+
+def classificar_carta_controle(cpk, pontos_fora_controle, total_pontos):
+    """
+    Classifica a carta de controle baseado na capacidade e estabilidade:
+    🟢 Verde: Capaz e Estável (Cpk ≥ 1.33 e ≤ 5% pontos fora)
+    🟡 Amarelo: Incapaz e Estável (Cpk < 1.33 e ≤ 5% pontos fora)
+    🟠 Mostarda: Capaz e Instável (Cpk ≥ 1.33 e > 5% pontos fora)
+    🔴 Vermelho: Incapaz e Instável (Cpk < 1.33 e > 5% pontos fora)
+    """
+    
+    if cpk is None or total_pontos == 0:
+        return "🔵 Indefinido", "Dados insuficientes para classificação"
+    
+    percentual_fora_controle = (pontos_fora_controle / total_pontos * 100)
+    
+    # Definir critérios
+    capaz = cpk >= 1.33  # Processo considerado capaz
+    estavel = percentual_fora_controle <= 5  # Menos de 5% dos pontos fora de controle
+    
+    # Classificação conforme especificado
+    if capaz and estavel:
+        return "🟢 Verde", "Capaz e Estável"
+    elif not capaz and estavel:
+        return "🟡 Amarelo", "Incapaz e Estável"
+    elif capaz and not estavel:
+        return "🟠 Mostarda", "Capaz e Instável"
+    else:
+        return "🔴 Vermelho", "Incapaz e Instável"
+
+def criar_indicador_classificacao(cor, classificacao, cpk, percentual_fora):
+    """Cria um indicador visual para a classificação da carta de controle"""
+    
+    # Mapeamento de cores para fundos
+    cores_fundo = {
+        "🟢 Verde": "background-color: #90EE90; padding: 10px; border-radius: 5px;",
+        "🟡 Amarelo": "background-color: #FFFACD; padding: 10px; border-radius: 5px;",
+        "🟠 Mostarda": "background-color: #E6DBAC; padding: 10px; border-radius: 5px;",
+        "🔴 Vermelho": "background-color: #FFB6C1; padding: 10px; border-radius: 5px;",
+        "🔵 Indefinido": "background-color: #E6E6FA; padding: 10px; border-radius: 5px;"
+    }
+    
+    estilo = cores_fundo.get(cor, "background-color: #E6E6FA; padding: 10px; border-radius: 5px;")
+    
+    html = f"""
+    <div style="{estilo}">
+        <h3 style="margin: 0; color: #333;">Classificação da Carta de Controle</h3>
+        <p style="margin: 5px 0; font-size: 18px; font-weight: bold;">{cor} {classificacao}</p>
+        <p style="margin: 2px 0;">Cpk: {cpk:.3f if cpk else 'N/A'}</p>
+        <p style="margin: 2px 0;">Pontos fora de controle: {percentual_fora:.1f}%</p>
+    </div>
+    """
+    return html
+
 # ========== FUNÇÕES PARA ANÁLISE DE CAPABILIDADE ==========
 
 def calcular_indices_capabilidade(dados, coluna, lse, lie):
@@ -1424,6 +1478,39 @@ def main():
                             with col_stat4:
                                 capacidade = (limites_xbar[0] - limites_xbar[2]) / (6 * limites_s[1])
                                 st.metric("Capacidade do Processo", f"{capacidade:.3f}")
+                            
+                            # ========== NOVA CLASSIFICAÇÃO PARA CARTA DE CONTROLE ==========
+                            st.subheader("🎨 Classificação da Carta de Controle")
+                            
+                            # Calcular Cpk se limites de especificação estiverem disponíveis
+                            cpk = None
+                            lse = st.session_state.lse_values.get(coluna_valor, 0)
+                            lie = st.session_state.lie_values.get(coluna_valor, 0)
+                            
+                            if lse != 0 and lie != 0 and lse > lie:
+                                resultados_capabilidade = calcular_indices_capabilidade(
+                                    dados_processados, coluna_valor, lse, lie
+                                )
+                                if resultados_capabilidade and 'cpk' in resultados_capabilidade:
+                                    cpk = resultados_capabilidade['cpk']
+                            
+                            # Calcular percentual de pontos fora de controle
+                            total_pontos_xbar = len(xbar)
+                            total_pontos_s = len(s)
+                            percentual_fora_xbar = (pontos_fora_xbar / total_pontos_xbar * 100) if total_pontos_xbar > 0 else 0
+                            percentual_fora_s = (pontos_fora_s / total_pontos_s * 100) if total_pontos_s > 0 else 0
+                            
+                            # Usar o maior percentual para classificação
+                            percentual_fora = max(percentual_fora_xbar, percentual_fora_s)
+                            
+                            # Classificar a carta de controle
+                            cor, classificacao = classificar_carta_controle(cpk, pontos_fora_xbar + pontos_fora_s, total_pontos_xbar + total_pontos_s)
+                            
+                            # Exibir indicador de classificação
+                            html_classificacao = criar_indicador_classificacao(
+                                cor, classificacao, cpk, percentual_fora
+                            )
+                            st.markdown(html_classificacao, unsafe_allow_html=True)
                 
                 elif tipo_carta == "Individuais e Amplitude Móvel (I-MR)":
                     if 'coluna_valor' in locals():
@@ -1463,6 +1550,39 @@ def main():
                             with col_stat3:
                                 st.metric("Pontos Fora (Individuais)", pontos_fora_i)
                                 st.metric("Pontos Fora (MR)", pontos_fora_mr)
+                            
+                            # ========== NOVA CLASSIFICAÇÃO PARA CARTA DE CONTROLE ==========
+                            st.subheader("🎨 Classificação da Carta de Controle")
+                            
+                            # Calcular Cpk se limites de especificação estiverem disponíveis
+                            cpk = None
+                            lse = st.session_state.lse_values.get(coluna_valor, 0)
+                            lie = st.session_state.lie_values.get(coluna_valor, 0)
+                            
+                            if lse != 0 and lie != 0 and lse > lie:
+                                resultados_capabilidade = calcular_indices_capabilidade(
+                                    dados_processados, coluna_valor, lse, lie
+                                )
+                                if resultados_capabilidade and 'cpk' in resultados_capabilidade:
+                                    cpk = resultados_capabilidade['cpk']
+                            
+                            # Calcular percentual de pontos fora de controle
+                            total_pontos_i = len(individuais)
+                            total_pontos_mr = len(mr)
+                            percentual_fora_i = (pontos_fora_i / total_pontos_i * 100) if total_pontos_i > 0 else 0
+                            percentual_fora_mr = (pontos_fora_mr / total_pontos_mr * 100) if total_pontos_mr > 0 else 0
+                            
+                            # Usar o maior percentual para classificação
+                            percentual_fora = max(percentual_fora_i, percentual_fora_mr)
+                            
+                            # Classificar a carta de controle
+                            cor, classificacao = classificar_carta_controle(cpk, pontos_fora_i + pontos_fora_mr, total_pontos_i + total_pontos_mr)
+                            
+                            # Exibir indicador de classificação
+                            html_classificacao = criar_indicador_classificacao(
+                                cor, classificacao, cpk, percentual_fora
+                            )
+                            st.markdown(html_classificacao, unsafe_allow_html=True)
                 
                 elif tipo_carta == "P (Proporção de Defeituosos)":
                     if 'coluna_defeitos' in locals() and 'coluna_tamanho_amostra' in locals():
@@ -1492,6 +1612,25 @@ def main():
                             with col_stat3:
                                 st.metric("Pontos Fora", pontos_fora_p)
                                 st.metric("Total Grupos", len(p))
+                            
+                            # ========== NOVA CLASSIFICAÇÃO PARA CARTA DE CONTROLE ==========
+                            st.subheader("🎨 Classificação da Carta de Controle")
+                            
+                            # Para carta P, consideramos Cpk = None (não aplicável)
+                            cpk = None
+                            
+                            # Calcular percentual de pontos fora de controle
+                            total_pontos = len(p)
+                            percentual_fora = (pontos_fora_p / total_pontos * 100) if total_pontos > 0 else 0
+                            
+                            # Classificar a carta de controle
+                            cor, classificacao = classificar_carta_controle(cpk, pontos_fora_p, total_pontos)
+                            
+                            # Exibir indicador de classificação
+                            html_classificacao = criar_indicador_classificacao(
+                                cor, classificacao, cpk, percentual_fora
+                            )
+                            st.markdown(html_classificacao, unsafe_allow_html=True)
                 
                 elif tipo_carta == "C (Número de Defeitos)":
                     if 'coluna_defeitos' in locals():
@@ -1521,6 +1660,25 @@ def main():
                             with col_stat3:
                                 st.metric("Pontos Fora", pontos_fora_c)
                                 st.metric("Total Grupos", len(c))
+                            
+                            # ========== NOVA CLASSIFICAÇÃO PARA CARTA DE CONTROLE ==========
+                            st.subheader("🎨 Classificação da Carta de Controle")
+                            
+                            # Para carta C, consideramos Cpk = None (não aplicável)
+                            cpk = None
+                            
+                            # Calcular percentual de pontos fora de controle
+                            total_pontos = len(c)
+                            percentual_fora = (pontos_fora_c / total_pontos * 100) if total_pontos > 0 else 0
+                            
+                            # Classificar a carta de controle
+                            cor, classificacao = classificar_carta_controle(cpk, pontos_fora_c, total_pontos)
+                            
+                            # Exibir indicador de classificação
+                            html_classificacao = criar_indicador_classificacao(
+                                cor, classificacao, cpk, percentual_fora
+                            )
+                            st.markdown(html_classificacao, unsafe_allow_html=True)
                 
                 # Análise de padrões
                 st.subheader("🔍 Análise de Padrões na Carta de Controle")
