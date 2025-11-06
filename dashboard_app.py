@@ -756,23 +756,45 @@ def calcular_correlacoes_completas(dados, variaveis_selecionadas, metodo='pearso
         return None, None
 
 def analise_correlacao_detalhada(dados, var1, var2):
-    """Análise detalhada de correlação entre duas variáveis"""
+    """Análise detalhada de correlação entre duas variáveis - VERSÃO CORRIGIDA"""
     try:
+        # Verificar se as colunas existem
+        if var1 not in dados.columns or var2 not in dados.columns:
+            st.error(f"Colunas {var1} ou {var2} não encontradas nos dados")
+            return None
+        
+        # Filtrar dados e garantir que são unidimensionais
         dados_clean = dados[[var1, var2]].dropna()
         
         if len(dados_clean) < 3:
+            st.warning("Dados insuficientes para análise de correlação (mínimo 3 pontos)")
             return None
         
-        x = dados_clean[var1].values
-        y = dados_clean[var2].values
+        # Garantir que os dados são unidimensionais
+        x = dados_clean[var1].values.flatten()  # .flatten() garante 1D
+        y = dados_clean[var2].values.flatten()  # .flatten() garante 1D
+        
+        # Verificar se os arrays têm o mesmo comprimento
+        if len(x) != len(y):
+            st.error("Arrays com comprimentos diferentes")
+            return None
         
         # Correlação Pearson
-        correlacao_pearson = np.corrcoef(x, y)[0, 1]
+        if len(x) > 1 and np.std(x) > 0 and np.std(y) > 0:
+            correlacao_pearson = np.corrcoef(x, y)[0, 1]
+        else:
+            correlacao_pearson = 0
         
         # Correlação Spearman
-        rank_x = pd.Series(x).rank()
-        rank_y = pd.Series(y).rank()
-        correlacao_spearman = np.corrcoef(rank_x, rank_y)[0, 1]
+        try:
+            rank_x = pd.Series(x).rank()
+            rank_y = pd.Series(y).rank()
+            if len(rank_x) > 1 and np.std(rank_x) > 0 and np.std(rank_y) > 0:
+                correlacao_spearman = np.corrcoef(rank_x, rank_y)[0, 1]
+            else:
+                correlacao_spearman = 0
+        except:
+            correlacao_spearman = 0
         
         # Regressão linear
         slope, intercept, r_squared = calcular_regressao_linear(x, y)
@@ -782,22 +804,24 @@ def analise_correlacao_detalhada(dados, var1, var2):
             'media': np.mean(x),
             'std': np.std(x),
             'min': np.min(x),
-            'max': np.max(x)
+            'max': np.max(x),
+            'n': len(x)
         }
         
         stats_var2 = {
             'media': np.mean(y),
             'std': np.std(y),
             'min': np.min(y),
-            'max': np.max(y)
+            'max': np.max(y),
+            'n': len(y)
         }
         
         return {
             'pearson': correlacao_pearson,
             'spearman': correlacao_spearman,
-            'r_squared': r_squared,
-            'slope': slope,
-            'intercept': intercept,
+            'r_squared': r_squared if r_squared is not None else 0,
+            'slope': slope if slope is not None else 0,
+            'intercept': intercept if intercept is not None else 0,
             'n_amostras': len(dados_clean),
             'stats_var1': stats_var1,
             'stats_var2': stats_var2
@@ -811,6 +835,10 @@ def analise_correlacao_detalhada(dados, var1, var2):
 
 def calcular_regressao_linear(x, y):
     """Calcula regressão linear manualmente - VERSÃO CORRIGIDA"""
+    # Garantir que os arrays são unidimensionais
+    x = np.asarray(x).flatten()
+    y = np.asarray(y).flatten()
+    
     mask = ~np.isnan(x) & ~np.isnan(y)
     x_clean = x[mask]
     y_clean = y[mask]
@@ -2029,38 +2057,38 @@ def main():
                     st.plotly_chart(fig, use_container_width=True)
                     
                     # Estatísticas de correlação usando função corrigida
-                    st.subheader("📊 Estatísticas de Correlação e Regressão")
-                    
-                    try:
-                        # Usar análise detalhada de correlação
-                        resultado_corr = analise_correlacao_detalhada(dados_scatter, eixo_x, eixo_y)
-                        
-                        if resultado_corr:
-                            col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
-                            with col_stat1:
-                                st.metric("Correlação (Pearson)", f"{resultado_corr['pearson']:.4f}")
-                            with col_stat2:
-                                st.metric("Correlação (Spearman)", f"{resultado_corr['spearman']:.4f}")
-                            with col_stat3:
-                                st.metric("Coeficiente R²", f"{resultado_corr['r_squared']:.4f}")
-                            with col_stat4:
-                                st.metric("Inclinação", f"{resultado_corr['slope']:.4f}")
-                            
-                            # Interpretação da correlação
-                            st.subheader("🔍 Interpretação da Correlação")
-                            correlacao_abs = abs(resultado_corr['pearson'])
-                            
-                            if correlacao_abs > 0.7:
-                                st.success("**Forte correlação** - Relação muito significativa entre as variáveis")
-                            elif correlacao_abs > 0.3:
-                                st.warning("**Correlação moderada** - Relação moderada entre as variáveis")
-                            else:
-                                st.info("**Fraca ou nenhuma correlação** - Pouca relação entre as variáveis")
-                        else:
-                            st.warning("Não foi possível calcular as estatísticas de correlação")
-                            
-                    except Exception as e:
-                        st.error(f"Erro ao calcular estatísticas: {str(e)}")
+        st.subheader("📊 Estatísticas de Correlação e Regressão")
+
+            try:
+                # Usar análise detalhada de correlação
+                resultado_corr = analise_correlacao_detalhada(dados_scatter, eixo_x, eixo_y)
+    
+            if resultado_corr:
+                col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+            with col_stat1:
+                st.metric("Correlação (Pearson)", f"{resultado_corr['pearson']:.4f}")
+            with col_stat2:
+                st.metric("Correlação (Spearman)", f"{resultado_corr['spearman']:.4f}")
+            with col_stat3:
+                st.metric("Coeficiente R²", f"{resultado_corr['r_squared']:.4f}")
+            with col_stat4:
+                st.metric("Inclinação", f"{resultado_corr['slope']:.4f}")
+           
+            # Interpretação da correlação
+            st.subheader("🔍 Interpretação da Correlação")
+            correlacao_abs = abs(resultado_corr['pearson'])
+        
+            if correlacao_abs > 0.7:
+                st.success("**Forte correlação** - Relação muito significativa entre as variáveis")
+            elif correlacao_abs > 0.3:
+                st.warning("**Correlação moderada** - Relação moderada entre as variáveis")
+            else:
+                st.info("**Fraca ou nenhuma correlação** - Pouca relação entre as variáveis")
+        else:
+            st.warning("Não foi possível calcular as estatísticas de correlação")
+        
+except Exception as e:
+    st.error(f"Erro ao calcular estatísticas: {str(e)}")
 
     # ========== ABA 5: CARTA DE CONTROLE ==========
     with tab5:
