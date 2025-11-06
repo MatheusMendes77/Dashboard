@@ -129,240 +129,134 @@ def criar_indicador_classificacao(cor, classificacao, cpk, percentual_fora):
     """
     return html
 
-# ========== FUNÇÕES PARA ANÁLISE DE CAPABILIDADE ==========
+# ========== FUNÇÕES PARA CARTA DE CONTROLE COM LSE/LIE ==========
 
-def calcular_indices_capabilidade(dados, coluna, lse, lie):
-    """Calcula todos os índices de capabilidade"""
-    if coluna not in dados.columns:
-        return None
-    
-    data_clean = dados[coluna].dropna()
-    if len(data_clean) < 2:
-        return None
-    
-    media = np.mean(data_clean)
-    desvio_padrao = np.std(data_clean, ddof=1)
-    variancia = np.var(data_clean, ddof=1)
-    
-    resultados = {
-        'media': media,
-        'desvio_padrao': desvio_padrao,
-        'variancia': variancia,
-        'n': len(data_clean),
-        'minimo': np.min(data_clean),
-        'maximo': np.max(data_clean),
-        'amplitude': np.max(data_clean) - np.min(data_clean)
-    }
-    
-    if lse is not None and lie is not None and lse > lie and desvio_padrao > 0:
-        # Cp - Capacidade potencial do processo
-        cp = (lse - lie) / (6 * desvio_padrao)
-        
-        # Cpk - Capacidade real do processo
-        cpk_superior = (lse - media) / (3 * desvio_padrao)
-        cpk_inferior = (media - lie) / (3 * desvio_padrao)
-        cpk = min(cpk_superior, cpk_inferior)
-        
-        # Cpm - Capabilidade considerando o alvo (assume alvo no centro)
-        alvo = (lse + lie) / 2
-        cpm = (lse - lie) / (6 * np.sqrt(desvio_padrao**2 + (media - alvo)**2))
-        
-        # Pp - Performance potencial do processo
-        pp = (lse - lie) / (6 * desvio_padrao)
-        
-        # Ppk - Performance real do processo
-        ppk_superior = (lse - media) / (3 * desvio_padrao)
-        ppk_inferior = (media - lie) / (3 * desvio_padrao)
-        ppk = min(ppk_superior, ppk_inferior)
-        
-        # Percentual fora das especificações
-        z_superior = (lse - media) / desvio_padrao
-        z_inferior = (media - lie) / desvio_padrao
-        
-        # Estimativa de percentual fora (usando distribuição normal)
-        def normal_cdf(x):
-            """Aproximação da função de distribuição acumulada normal"""
-            return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
-        
-        pct_fora_superior = (1 - normal_cdf(z_superior)) * 100
-        pct_fora_inferior = normal_cdf(-z_inferior) * 100
-        pct_total_fora = pct_fora_superior + pct_fora_inferior
-        
-        resultados.update({
-            'lse': lse,
-            'lie': lie,
-            'alvo': alvo,
-            'cp': cp,
-            'cpk': cpk,
-            'cpm': cpm,
-            'pp': pp,
-            'ppk': ppk,
-            'cpk_superior': cpk_superior,
-            'cpk_inferior': cpk_inferior,
-            'z_superior': z_superior,
-            'z_inferior': z_inferior,
-            'pct_fora_superior': pct_fora_superior,
-            'pct_fora_inferior': pct_fora_inferior,
-            'pct_total_fora': pct_total_fora,
-            'ppm_superior': pct_fora_superior * 10000,
-            'ppm_inferior': pct_fora_inferior * 10000,
-            'ppm_total': pct_total_fora * 10000
-        })
-    
-    return resultados
-
-def criar_histograma_capabilidade(dados, coluna, lse, lie, resultados):
-    """Cria histograma com limites de especificação"""
-    if coluna not in dados.columns:
-        return go.Figure()
-    
-    data_clean = dados[coluna].dropna()
+def plotar_carta_controle_com_especificacoes(valores, limites_controle, limites_especificacao, titulo, tipo="individual"):
+    """Plota uma carta de controle com limites de especificação"""
+    LSC, LC, LIC = limites_controle
+    LSE, LIE = limites_especificacao
     
     fig = go.Figure()
     
-    # Histograma
-    fig.add_trace(go.Histogram(
-        x=data_clean,
-        nbinsx=30,
-        name='Distribuição',
-        opacity=0.7,
-        marker_color='lightblue',
-        histnorm='probability density'
-    ))
-    
-    # Linha de densidade (aproximação manual da curva normal)
-    x_range = np.linspace(data_clean.min(), data_clean.max(), 100)
-    pdf = (1/(resultados['desvio_padrao'] * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_range - resultados['media']) / resultados['desvio_padrao'])**2)
-    
+    # Adicionar pontos
     fig.add_trace(go.Scatter(
-        x=x_range,
-        y=pdf,
-        mode='lines',
-        name='Curva Normal',
-        line=dict(color='red', width=2)
-    ))
-    
-    # Limites de especificação
-    if lse is not None:
-        fig.add_vline(x=lse, line_dash="dash", line_color="red", 
-                     annotation_text="LSE", annotation_position="top")
-    
-    if lie is not None:
-        fig.add_vline(x=lie, line_dash="dash", line_color="red",
-                     annotation_text="LIE", annotation_position="top")
-    
-    # Média do processo
-    fig.add_vline(x=resultados['media'], line_dash="solid", line_color="green",
-                 annotation_text="Média", annotation_position="bottom")
-    
-    # Alvo (centro das especificações)
-    if lse is not None and lie is not None:
-        alvo = (lse + lie) / 2
-        fig.add_vline(x=alvo, line_dash="dot", line_color="orange",
-                     annotation_text="Alvo", annotation_position="bottom")
-    
-    fig.update_layout(
-        title=f"Histograma de Capabilidade - {coluna}",
-        xaxis_title=coluna,
-        yaxis_title="Densidade de Probabilidade",
-        showlegend=True,
-        height=500
-    )
-    
-    return fig
-
-def criar_grafico_controle_capabilidade(dados, coluna, lse, lie, resultados):
-    """Cria gráfico de controle para análise de capabilidade"""
-    if coluna not in dados.columns:
-        return go.Figure()
-    
-    data_clean = dados[coluna].dropna()
-    
-    fig = go.Figure()
-    
-    # Dados do processo
-    fig.add_trace(go.Scatter(
-        x=list(range(len(data_clean))),
-        y=data_clean,
+        x=list(range(1, len(valores) + 1)),
+        y=valores,
         mode='lines+markers',
         name='Valores',
-        line=dict(color='blue', width=1),
-        marker=dict(size=4)
+        line=dict(color='blue', width=2),
+        marker=dict(size=6)
     ))
     
-    # Média do processo
-    media = data_clean.mean()
-    fig.add_hline(y=media, line_dash="solid", line_color="green",
-                 annotation_text="Média", annotation_position="right")
+    # Adicionar linhas de controle (3 sigma)
+    fig.add_hline(y=LSC, line_dash="dash", line_color="red", 
+                  annotation_text="LSC (3σ)", annotation_position="right")
+    fig.add_hline(y=LC, line_dash="dash", line_color="green", 
+                  annotation_text="LC", annotation_position="right")
+    fig.add_hline(y=LIC, line_dash="dash", line_color="red", 
+                  annotation_text="LIC (3σ)", annotation_position="right")
     
-    # Limites de especificação
-    if lse is not None:
-        fig.add_hline(y=lse, line_dash="dash", line_color="red",
-                     annotation_text="LSE", annotation_position="right")
+    # Adicionar limites de especificação (se definidos)
+    if LSE is not None and LSE != 0:
+        fig.add_hline(y=LSE, line_dash="dot", line_color="purple", 
+                      annotation_text="LSE", annotation_position="left",
+                      line=dict(width=3))
     
-    if lie is not None:
-        fig.add_hline(y=lie, line_dash="dash", line_color="red",
-                     annotation_text="LIE", annotation_position="right")
+    if LIE is not None and LIE != 0:
+        fig.add_hline(y=LIE, line_dash="dot", line_color="purple", 
+                      annotation_text="LIE", annotation_position="left",
+                      line=dict(width=3))
     
-    # Alvo
-    if lse is not None and lie is not None:
-        alvo = (lse + lie) / 2
-        fig.add_hline(y=alvo, line_dash="dot", line_color="orange",
-                     annotation_text="Alvo", annotation_position="right")
+    # Destacar pontos fora dos limites de controle
+    pontos_fora_controle = (valores > LSC) | (valores < LIC)
+    if pontos_fora_controle.any():
+        indices_fora = np.where(pontos_fora_controle)[0] + 1
+        valores_fora = valores[pontos_fora_controle]
+        
+        fig.add_trace(go.Scatter(
+            x=indices_fora,
+            y=valores_fora,
+            mode='markers',
+            name='Fora de Controle (3σ)',
+            marker=dict(color='red', size=10, symbol='x')
+        ))
+    
+    # Destacar pontos fora dos limites de especificação (se definidos)
+    pontos_fora_especificacao = pd.Series([False] * len(valores))
+    if LSE is not None and LSE != 0:
+        pontos_fora_especificacao = pontos_fora_especificacao | (valores > LSE)
+    if LIE is not None and LIE != 0:
+        pontos_fora_especificacao = pontos_fora_especificacao | (valores < LIE)
+    
+    if pontos_fora_especificacao.any() and ((LSE is not None and LSE != 0) or (LIE is not None and LIE != 0)):
+        indices_fora_esp = np.where(pontos_fora_especificacao & ~pontos_fora_controle)[0] + 1
+        valores_fora_esp = valores[pontos_fora_especificacao & ~pontos_fora_controle]
+        
+        if len(valores_fora_esp) > 0:
+            fig.add_trace(go.Scatter(
+                x=indices_fora_esp,
+                y=valores_fora_esp,
+                mode='markers',
+                name='Fora de Especificação',
+                marker=dict(color='orange', size=12, symbol='star')
+            ))
     
     fig.update_layout(
-        title=f"Gráfico de Controle - {coluna}",
-        xaxis_title="Amostra",
-        yaxis_title=coluna,
+        title=titulo,
+        xaxis_title="Amostra/Grupo",
+        yaxis_title="Valor",
         showlegend=True,
-        height=400
+        height=500,
+        title_font_size=20,
+        xaxis_title_font_size=16,
+        yaxis_title_font_size=16
     )
     
-    return fig
+    return fig, pontos_fora_controle.sum(), pontos_fora_especificacao.sum()
 
-def interpretar_capabilidade(resultados):
-    """Fornece interpretação dos índices de capabilidade"""
-    if not resultados or 'cpk' not in resultados:
-        return "Dados insuficientes para análise"
+def calcular_estatisticas_carta_com_especificacoes(valores, limites_controle, limites_especificacao):
+    """Calcula estatísticas considerando limites de controle e especificação"""
+    LSC, LC, LIC = limites_controle
+    LSE, LIE = limites_especificacao
     
-    cpk = resultados['cpk']
-    cp = resultados.get('cp', cpk)
+    stats = {
+        'media': np.mean(valores),
+        'desvio_padrao': np.std(valores, ddof=1),
+        'n': len(valores),
+        'minimo': np.min(valores),
+        'maximo': np.max(valores)
+    }
     
-    interpretacao = ""
+    # Pontos fora dos limites de controle (3 sigma)
+    pontos_fora_controle = ((valores > LSC) | (valores < LIC)).sum()
+    stats['pontos_fora_controle'] = pontos_fora_controle
+    stats['percentual_fora_controle'] = (pontos_fora_controle / len(valores)) * 100 if len(valores) > 0 else 0
     
-    # Interpretação Cpk
-    if cpk >= 1.67:
-        interpretacao += "✅ **Excelente** - Processo altamente capaz (Cpk ≥ 1.67)\n"
-    elif cpk >= 1.33:
-        interpretacao += "✅ **Muito Bom** - Processo capaz (1.33 ≤ Cpk < 1.67)\n"
-    elif cpk >= 1.0:
-        interpretacao += "⚠️ **Aceitável** - Processo marginalmente capaz (1.0 ≤ Cpk < 1.33)\n"
-    elif cpk >= 0.67:
-        interpretacao += "❌ **Insatisfatório** - Processo incapaz (0.67 ≤ Cpk < 1.0)\n"
-    else:
-        interpretacao += "🚨 **Crítico** - Processo totalmente incapaz (Cpk < 0.67)\n"
+    # Pontos fora dos limites de especificação
+    pontos_fora_especificacao = 0
+    if LSE is not None and LSE != 0:
+        pontos_fora_especificacao += (valores > LSE).sum()
+    if LIE is not None and LIE != 0:
+        pontos_fora_especificacao += (valores < LIE).sum()
     
-    # Comparação Cp vs Cpk
-    if 'cp' in resultados:
-        diferenca = resultados['cp'] - resultados['cpk']
-        if diferenca > 0.5:
-            interpretacao += "\n📊 **Processo descentrado** - Grande diferença entre Cp e Cpk indica que o processo não está centrado\n"
-        elif diferenca > 0.2:
-            interpretacao += "\n📊 **Processo levemente descentrado** - Pequena diferença entre Cp e Cpk\n"
-        else:
-            interpretacao += "\n📊 **Processo bem centrado** - Cp e Cpk próximos indicam bom centramento\n"
+    stats['pontos_fora_especificacao'] = pontos_fora_especificacao
+    stats['percentual_fora_especificacao'] = (pontos_fora_especificacao / len(valores)) * 100 if len(valores) > 0 else 0
     
-    # Análise de capacidade
-    if cpk >= 1.33:
-        interpretacao += "\n🎯 **Recomendações:** Processo sob controle, mantenha monitoramento\n"
-    elif cpk >= 1.0:
-        interpretacao += "\n🎯 **Recomendações:** Melhorar centramento do processo\n"
-    else:
-        interpretacao += "\n🎯 **Recomendações:** Reduzir variabilidade e melhorar centramento\n"
+    # Cálculo de Cp e Cpk se ambos limites de especificação estiverem definidos
+    if LSE is not None and LIE is not None and LSE != 0 and LIE != 0 and LSE > LIE and stats['desvio_padrao'] > 0:
+        cp = (LSE - LIE) / (6 * stats['desvio_padrao'])
+        cpk_superior = (LSE - stats['media']) / (3 * stats['desvio_padrao'])
+        cpk_inferior = (stats['media'] - LIE) / (3 * stats['desvio_padrao'])
+        cpk = min(cpk_superior, cpk_inferior)
+        
+        stats.update({
+            'cp': cp,
+            'cpk': cpk,
+            'cpk_superior': cpk_superior,
+            'cpk_inferior': cpk_inferior
+        })
     
-    return interpretacao
-
-# ========== FIM DAS FUNÇÕES DE CAPABILIDADE ==========
+    return stats
 
 # ========== FUNÇÕES PARA CARTA DE CONTROLE ==========
 
@@ -490,60 +384,150 @@ def criar_carta_controle_c(dados, coluna_defeitos, coluna_grupo=None):
     
     return c, (LSC_c, c_media, LIC_c)
 
-def plotar_carta_controle(valores, limites, titulo, tipo="individual"):
-    """Plota uma carta de controle"""
-    LSC, LC, LIC = limites
+# ========== FUNÇÕES PARA ANÁLISE DE CAPABILIDADE ==========
+
+def calcular_indices_capabilidade(dados, coluna, lse, lie):
+    """Calcula todos os índices de capabilidade"""
+    if coluna not in dados.columns:
+        return None
+    
+    data_clean = dados[coluna].dropna()
+    if len(data_clean) < 2:
+        return None
+    
+    media = np.mean(data_clean)
+    desvio_padrao = np.std(data_clean, ddof=1)
+    variancia = np.var(data_clean, ddof=1)
+    
+    resultados = {
+        'media': media,
+        'desvio_padrao': desvio_padrao,
+        'variancia': variancia,
+        'n': len(data_clean),
+        'minimo': np.min(data_clean),
+        'maximo': np.max(data_clean),
+        'amplitude': np.max(data_clean) - np.min(data_clean)
+    }
+    
+    if lse is not None and lie is not None and lse > lie and desvio_padrao > 0:
+        # Cp - Capacidade potencial do processo
+        cp = (lse - lie) / (6 * desvio_padrao)
+        
+        # Cpk - Capacidade real do processo
+        cpk_superior = (lse - media) / (3 * desvio_padrao)
+        cpk_inferior = (media - lie) / (3 * desvio_padrao)
+        cpk = min(cpk_superior, cpk_inferior)
+        
+        # Cpm - Capabilidade considerando o alvo (assume alvo no centro)
+        alvo = (lse + lie) / 2
+        cpm = (lse - lie) / (6 * np.sqrt(desvio_padrao**2 + (media - alvo)**2))
+        
+        # Pp - Performance potencial do processo
+        pp = (lse - lie) / (6 * desvio_padrao)
+        
+        # Ppk - Performance real do processo
+        ppk_superior = (lse - media) / (3 * desvio_padrao)
+        ppk_inferior = (media - lie) / (3 * desvio_padrao)
+        ppk = min(ppk_superior, ppk_inferior)
+        
+        # Percentual fora das especificações
+        z_superior = (lse - media) / desvio_padrao
+        z_inferior = (media - lie) / desvio_padrao
+        
+        # Estimativa de percentual fora (usando distribuição normal)
+        def normal_cdf(x):
+            """Aproximação da função de distribuição acumulada normal"""
+            return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
+        
+        pct_fora_superior = (1 - normal_cdf(z_superior)) * 100
+        pct_fora_inferior = normal_cdf(-z_inferior) * 100
+        pct_total_fora = pct_fora_superior + pct_fora_inferior
+        
+        resultados.update({
+            'lse': lse,
+            'lie': lie,
+            'alvo': alvo,
+            'cp': cp,
+            'cpk': cpk,
+            'cpm': cpm,
+            'pp': pp,
+            'ppk': ppk,
+            'cpk_superior': cpk_superior,
+            'cpk_inferior': cpk_inferior,
+            'z_superior': z_superior,
+            'z_inferior': z_inferior,
+            'pct_fora_superior': pct_fora_superior,
+            'pct_fora_inferior': pct_fora_inferior,
+            'pct_total_fora': pct_total_fora,
+            'ppm_superior': pct_fora_superior * 10000,
+            'ppm_inferior': pct_fora_inferior * 10000,
+            'ppm_total': pct_total_fora * 10000
+        })
+    
+    return resultados
+
+def criar_histograma_capabilidade(dados, coluna, lse, lie, resultados):
+    """Cria histograma com limites de especificação"""
+    if coluna not in dados.columns:
+        return go.Figure()
+    
+    data_clean = dados[coluna].dropna()
     
     fig = go.Figure()
     
-    # Adicionar pontos
-    fig.add_trace(go.Scatter(
-        x=list(range(1, len(valores) + 1)),
-        y=valores,
-        mode='lines+markers',
-        name='Valores',
-        line=dict(color='blue', width=2),
-        marker=dict(size=6)
+    # Histograma
+    fig.add_trace(go.Histogram(
+        x=data_clean,
+        nbinsx=30,
+        name='Distribuição',
+        opacity=0.7,
+        marker_color='lightblue',
+        histnorm='probability density'
     ))
     
-    # Adicionar linhas de controle
-    fig.add_hline(y=LSC, line_dash="dash", line_color="red", 
-                  annotation_text="LSC", annotation_position="right")
-    fig.add_hline(y=LC, line_dash="dash", line_color="green", 
-                  annotation_text="LC", annotation_position="right")
-    fig.add_hline(y=LIC, line_dash="dash", line_color="red", 
-                  annotation_text="LIC", annotation_position="right")
+    # Linha de densidade (aproximação manual da curva normal)
+    x_range = np.linspace(data_clean.min(), data_clean.max(), 100)
+    pdf = (1/(resultados['desvio_padrao'] * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_range - resultados['media']) / resultados['desvio_padrao'])**2)
     
-    # Destacar pontos fora de controle
-    pontos_fora = (valores > LSC) | (valores < LIC)
-    if pontos_fora.any():
-        indices_fora = np.where(pontos_fora)[0] + 1
-        valores_fora = valores[pontos_fora]
-        
-        fig.add_trace(go.Scatter(
-            x=indices_fora,
-            y=valores_fora,
-            mode='markers',
-            name='Fora de Controle',
-            marker=dict(color='red', size=10, symbol='x')
-        ))
+    fig.add_trace(go.Scatter(
+        x=x_range,
+        y=pdf,
+        mode='lines',
+        name='Curva Normal',
+        line=dict(color='red', width=2)
+    ))
+    
+    # Limites de especificação
+    if lse is not None and lse != 0:
+        fig.add_vline(x=lse, line_dash="dash", line_color="red", 
+                     annotation_text="LSE", annotation_position="top")
+    
+    if lie is not None and lie != 0:
+        fig.add_vline(x=lie, line_dash="dash", line_color="red",
+                     annotation_text="LIE", annotation_position="top")
+    
+    # Média do processo
+    fig.add_vline(x=resultados['media'], line_dash="solid", line_color="green",
+                 annotation_text="Média", annotation_position="bottom")
+    
+    # Alvo (centro das especificações)
+    if lse is not None and lie is not None and lse != 0 and lie != 0:
+        alvo = (lse + lie) / 2
+        fig.add_vline(x=alvo, line_dash="dot", line_color="orange",
+                     annotation_text="Alvo", annotation_position="bottom")
     
     fig.update_layout(
-        title=titulo,
-        xaxis_title="Amostra/Grupo",
-        yaxis_title="Valor",
+        title=f"Histograma de Capabilidade - {coluna}",
+        xaxis_title=coluna,
+        yaxis_title="Densidade de Probabilidade",
         showlegend=True,
-        height=500,
-        title_font_size=20,
-        xaxis_title_font_size=16,
-        yaxis_title_font_size=16
+        height=500
     )
     
-    return fig, pontos_fora.sum()
+    return fig
 
-# ========== FIM DAS FUNÇÕES DE CARTA DE CONTROLE ==========
+# ========== FUNÇÕES PARA ANÁLISE ESTATÍSTICA ==========
 
-# Função para calcular regressão linear manualmente
 def calcular_regressao_linear(x, y):
     """Calcula regressão linear manualmente"""
     mask = ~np.isnan(x) & ~np.isnan(y)
@@ -574,167 +558,6 @@ def calcular_regressao_linear(x, y):
     
     return slope, intercept, r_squared
 
-# Função para criar gráfico Q-Q (implementação manual)
-def criar_qq_plot_correto(data):
-    """Cria gráfico Q-Q correto passando pelo meio dos pontos"""
-    data_clean = data.dropna()
-    if len(data_clean) < 2:
-        return go.Figure()
-    
-    # Calcular quantis teóricos usando distribuição normal manualmente
-    n = len(data_clean)
-    # Gerar quantis teóricos para distribuição normal
-    theoretical_quantiles = np.sort(np.random.normal(0, 1, n))
-    sample_quantiles = np.sort(data_clean)
-    
-    # Normalizar os dados para melhor visualização
-    sample_mean = np.mean(sample_quantiles)
-    sample_std = np.std(sample_quantiles)
-    if sample_std > 0:
-        sample_quantiles = (sample_quantiles - sample_mean) / sample_std
-    
-    # Calcular linha de tendência para o Q-Q plot
-    z = np.polyfit(theoretical_quantiles, sample_quantiles, 1)
-    p = np.poly1d(z)
-    
-    fig = go.Figure()
-    
-    # Adicionar pontos
-    fig.add_trace(go.Scatter(
-        x=theoretical_quantiles,
-        y=sample_quantiles,
-        mode='markers',
-        name='Dados',
-        marker=dict(color='blue', size=6)
-    ))
-    
-    # Adicionar linha de tendência que passa pelo meio dos pontos
-    fig.add_trace(go.Scatter(
-        x=theoretical_quantiles,
-        y=p(theoretical_quantiles),
-        mode='lines',
-        name='Linha de Tendência',
-        line=dict(color='red', width=2)
-    ))
-    
-    fig.update_layout(
-        title="Gráfico Q-Q (Análise de Normalidade)",
-        xaxis_title="Quantis Teóricos",
-        yaxis_title="Quantis Amostrais",
-        showlegend=True
-    )
-    
-    return fig
-
-# Função para análise de capacidade do processo
-def analise_capacidade_processo(dados, coluna, lse, lie):
-    """Analisa a capacidade do processo"""
-    if coluna not in dados.columns:
-        return None
-    
-    data_clean = dados[coluna].dropna()
-    if len(data_clean) < 2:
-        return None
-    
-    media = np.mean(data_clean)
-    desvio_padrao = np.std(data_clean, ddof=1)
-    
-    resultados = {
-        'media': media,
-        'desvio_padrao': desvio_padrao,
-        'n': len(data_clean)
-    }
-    
-    if lse is not None and lie is not None and lse > lie and desvio_padrao > 0:
-        # Cp - Capacidade do processo
-        cp = (lse - lie) / (6 * desvio_padrao)
-        # Cpk - Capacidade real do processo
-        cpk_u = (lse - media) / (3 * desvio_padrao)
-        cpk_l = (media - lie) / (3 * desvio_padrao)
-        cpk = min(cpk_u, cpk_l)
-        
-        resultados.update({
-            'cp': cp,
-            'cpk': cpk,
-            'lse': lse,
-            'lie': lie
-        })
-    
-    return resultados
-
-# Função para criar gráfico de controle
-def criar_grafico_controle(dados, coluna_valor, coluna_data=None):
-    """Cria gráfico de controle (X-bar)"""
-    if coluna_valor not in dados.columns:
-        return go.Figure(), 0, 0, 0
-    
-    data_clean = dados[[coluna_valor]].copy()
-    if coluna_data and coluna_data in dados.columns:
-        data_clean[coluna_data] = dados[coluna_data]
-        data_clean = data_clean.sort_values(coluna_data)
-    
-    # Calcular limites de controle
-    media = data_clean[coluna_valor].mean()
-    std = data_clean[coluna_valor].std()
-    
-    lsc = media + 3 * std  # Limite Superior de Controle
-    lic = media - 3 * std  # Limite Inferior de Controle
-    lc = media             # Linha Central
-    
-    fig = go.Figure()
-    
-    # Adicionar pontos do processo
-    if coluna_data and coluna_data in data_clean.columns:
-        x_data = data_clean[coluna_data]
-    else:
-        x_data = list(range(len(data_clean)))
-    
-    fig.add_trace(go.Scatter(
-        x=x_data,
-        y=data_clean[coluna_valor],
-        mode='lines+markers',
-        name='Valores',
-        line=dict(color='blue', width=2),
-        marker=dict(size=6)
-    ))
-    
-    # Adicionar linhas de controle
-    fig.add_hline(y=lsc, line_dash="dash", line_color="red", annotation_text="LSC")
-    fig.add_hline(y=lc, line_dash="dash", line_color="green", annotation_text="LC")
-    fig.add_hline(y=lic, line_dash="dash", line_color="red", annotation_text="LIC")
-    
-    fig.update_layout(
-        title=f"Gráfico de Controle - {coluna_valor}",
-        xaxis_title=coluna_data if coluna_data else "Amostras",
-        yaxis_title=coluna_valor,
-        showlegend=True
-    )
-    
-    return fig, lsc, lc, lic
-
-# Função para teste de normalidade manual (simplificado)
-def teste_normalidade_manual(data):
-    """Teste de normalidade simplificado usando assimetria e curtose"""
-    data_clean = data.dropna()
-    if len(data_clean) < 3:
-        return 0.5  # Valor neutro se não há dados suficientes
-    
-    # Calcular assimetria manualmente
-    mean_val = np.mean(data_clean)
-    std_val = np.std(data_clean)
-    if std_val == 0:
-        return 0.5
-    
-    skewness = np.mean(((data_clean - mean_val) / std_val) ** 3)
-    
-    # Calcular curtose manualmente
-    kurtosis = np.mean(((data_clean - mean_val) / std_val) ** 4) - 3
-    
-    # Estimativa simplificada de p-valor baseada na assimetria e curtose
-    p_value = max(0, 1 - (abs(skewness) + abs(kurtosis)) / 2)
-    return p_value
-
-# NOVA FUNÇÃO: Criar gráfico de dispersão com regressão usando apenas numpy
 def criar_dispersao_regressao(dados, eixo_x, eixo_y, color_by=None):
     """Cria gráfico de dispersão com linha de regressão usando apenas numpy"""
     try:
@@ -792,7 +615,6 @@ def criar_dispersao_regressao(dados, eixo_x, eixo_y, color_by=None):
         st.error(f"Erro ao criar gráfico de dispersão: {str(e)}")
         return go.Figure()
 
-# NOVA FUNÇÃO: Calcular estatísticas de correlação sem scipy
 def calcular_estatisticas_correlacao(dados, eixo_x, eixo_y):
     """Calcula estatísticas de correlação sem usar scipy"""
     try:
@@ -822,6 +644,78 @@ def calcular_estatisticas_correlacao(dados, eixo_x, eixo_y):
     except Exception as e:
         st.error(f"Erro ao calcular estatísticas: {str(e)}")
         return None, None, None, None
+
+def criar_qq_plot_correto(data):
+    """Cria gráfico Q-Q correto passando pelo meio dos pontos"""
+    data_clean = data.dropna()
+    if len(data_clean) < 2:
+        return go.Figure()
+    
+    # Calcular quantis teóricos usando distribuição normal manualmente
+    n = len(data_clean)
+    # Gerar quantis teóricos para distribuição normal
+    theoretical_quantiles = np.sort(np.random.normal(0, 1, n))
+    sample_quantiles = np.sort(data_clean)
+    
+    # Normalizar os dados para melhor visualização
+    sample_mean = np.mean(sample_quantiles)
+    sample_std = np.std(sample_quantiles)
+    if sample_std > 0:
+        sample_quantiles = (sample_quantiles - sample_mean) / sample_std
+    
+    # Calcular linha de tendência para o Q-Q plot
+    z = np.polyfit(theoretical_quantiles, sample_quantiles, 1)
+    p = np.poly1d(z)
+    
+    fig = go.Figure()
+    
+    # Adicionar pontos
+    fig.add_trace(go.Scatter(
+        x=theoretical_quantiles,
+        y=sample_quantiles,
+        mode='markers',
+        name='Dados',
+        marker=dict(color='blue', size=6)
+    ))
+    
+    # Adicionar linha de tendência que passa pelo meio dos pontos
+    fig.add_trace(go.Scatter(
+        x=theoretical_quantiles,
+        y=p(theoretical_quantiles),
+        mode='lines',
+        name='Linha de Tendência',
+        line=dict(color='red', width=2)
+    ))
+    
+    fig.update_layout(
+        title="Gráfico Q-Q (Análise de Normalidade)",
+        xaxis_title="Quantis Teóricos",
+        yaxis_title="Quantis Amostrais",
+        showlegend=True
+    )
+    
+    return fig
+
+def teste_normalidade_manual(data):
+    """Teste de normalidade simplificado usando assimetria e curtose"""
+    data_clean = data.dropna()
+    if len(data_clean) < 3:
+        return 0.5  # Valor neutro se não há dados suficientes
+    
+    # Calcular assimetria manualmente
+    mean_val = np.mean(data_clean)
+    std_val = np.std(data_clean)
+    if std_val == 0:
+        return 0.5
+    
+    skewness = np.mean(((data_clean - mean_val) / std_val) ** 3)
+    
+    # Calcular curtose manualmente
+    kurtosis = np.mean(((data_clean - mean_val) / std_val) ** 4) - 3
+    
+    # Estimativa simplificada de p-valor baseada na assimetria e curtose
+    p_value = max(0, 1 - (abs(skewness) + abs(kurtosis)) / 2)
+    return p_value
 
 def main():
     st.title("🏭 Dashboard de Análise de Processos Industriais")
@@ -1361,13 +1255,14 @@ def main():
                     except Exception as e:
                         st.error(f"Erro ao calcular estatísticas: {str(e)}")
 
-    # ========== ABA 5: CARTA DE CONTROLE (COM CLASSIFICAÇÃO CORRIGIDA) ==========
+    # ========== ABA 5: CARTA DE CONTROLE COM LSE/LIE ==========
     with tab5:
-        st.header("🎯 Cartas de Controle Estatístico")
+        st.header("🎯 Cartas de Controle com Limites de Especificação")
         
         st.markdown("""
-        **Cartas de Controle** são ferramentas visuais para monitorar a estabilidade de processos.
-        Selecione o tipo de carta e configure os parâmetros:
+        **Cartas de Controle** com limites de especificação (LSE/LIE) e limites de controle (3σ).
+        - **Limites de Controle (3σ)**: Baseados na variação natural do processo
+        - **Limites de Especificação**: Definidos pelos requisitos do cliente/produto
         """)
         
         # Seleção do tipo de carta
@@ -1434,6 +1329,20 @@ def main():
                     [""] + colunas_todas,
                     key=generate_unique_key("carta_tempo", "tab5")
                 )
+            
+            # Configuração específica de limites para esta carta
+            st.subheader("⚙️ Limites para esta Carta")
+            if 'coluna_valor' in locals():
+                lse_carta = st.number_input(
+                    "LSE para esta carta:",
+                    value=float(st.session_state.lse_values.get(coluna_valor, 0)),
+                    key=generate_unique_key("lse_carta", "tab5")
+                )
+                lie_carta = st.number_input(
+                    "LIE para esta carta:",
+                    value=float(st.session_state.lie_values.get(coluna_valor, 0)),
+                    key=generate_unique_key("lie_carta", "tab5")
+                )
         
         # Botão para gerar carta
         if st.button("📊 Gerar Carta de Controle", use_container_width=True,
@@ -1449,76 +1358,64 @@ def main():
                         )
                         
                         if xbar is not None:
-                            # Carta X-bar - TELA CHEIA
+                            # Carta X-bar com especificações
                             st.subheader(f"📊 Carta X-bar - {coluna_valor}")
-                            fig_xbar, pontos_fora_xbar = plotar_carta_controle(
-                                xbar, limites_xbar, 
+                            fig_xbar, pontos_fora_xbar, pontos_fora_esp_xbar = plotar_carta_controle_com_especificacoes(
+                                xbar, limites_xbar, (lse_carta, lie_carta),
                                 f"Carta X-bar - {coluna_valor}", "xbar"
                             )
                             st.plotly_chart(fig_xbar, use_container_width=True)
                             
-                            # Carta S - TELA CHEIA
+                            # Carta S com especificações
                             st.subheader(f"📊 Carta S - {coluna_valor}")
-                            fig_s, pontos_fora_s = plotar_carta_controle(
-                                s, limites_s,
+                            fig_s, pontos_fora_s, pontos_fora_esp_s = plotar_carta_controle_com_especificacoes(
+                                s, limites_s, (None, None),  # Carta S não usa LSE/LIE
                                 f"Carta S - {coluna_valor}", "s"
                             )
                             st.plotly_chart(fig_s, use_container_width=True)
                             
-                            # Estatísticas
+                            # Estatísticas detalhadas
                             st.subheader("📊 Estatísticas da Carta de Controle")
+                            
+                            # Estatísticas para X-bar
+                            stats_xbar = calcular_estatisticas_carta_com_especificacoes(
+                                xbar, limites_xbar, (lse_carta, lie_carta)
+                            )
+                            
                             col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
                             with col_stat1:
-                                st.metric("LSC X-bar", f"{limites_xbar[0]:.4f}")
+                                st.metric("LSC X-bar (3σ)", f"{limites_xbar[0]:.4f}")
                                 st.metric("LC X-bar", f"{limites_xbar[1]:.4f}")
-                                st.metric("LIC X-bar", f"{limites_xbar[2]:.4f}")
+                                st.metric("LIC X-bar (3σ)", f"{limites_xbar[2]:.4f}")
                             with col_stat2:
-                                st.metric("LSC S", f"{limites_s[0]:.4f}")
-                                st.metric("LC S", f"{limites_s[1]:.4f}")
-                                st.metric("LIC S", f"{limites_s[2]:.4f}")
+                                st.metric("LSE", f"{lse_carta:.4f}" if lse_carta != 0 else "Não definido")
+                                st.metric("LIE", f"{lie_carta:.4f}" if lie_carta != 0 else "Não definido")
+                                st.metric("Média", f"{stats_xbar['media']:.4f}")
                             with col_stat3:
-                                st.metric("Pontos Fora (X-bar)", pontos_fora_xbar)
-                                st.metric("Pontos Fora (S)", pontos_fora_s)
+                                st.metric("Pontos Fora Controle", pontos_fora_xbar)
+                                st.metric("Pontos Fora Especificação", pontos_fora_esp_xbar)
+                                st.metric("% Fora Controle", f"{stats_xbar['percentual_fora_controle']:.1f}%")
                             with col_stat4:
-                                capacidade = (limites_xbar[0] - limites_xbar[2]) / (6 * limites_s[1]) if limites_s[1] > 0 else 0
-                                st.metric("Capacidade do Processo", f"{capacidade:.3f}")
+                                if 'cpk' in stats_xbar:
+                                    st.metric("Cp", f"{stats_xbar['cp']:.3f}")
+                                    st.metric("Cpk", f"{stats_xbar['cpk']:.3f}")
+                                else:
+                                    st.metric("Desvio Padrão", f"{stats_xbar['desvio_padrao']:.4f}")
+                                    st.metric("Amplitude", f"{stats_xbar['maximo'] - stats_xbar['minimo']:.4f}")
                             
-                            # ========== CLASSIFICAÇÃO CORRIGIDA PARA CARTA DE CONTROLE ==========
+                            # ========== CLASSIFICAÇÃO DA CARTA ==========
                             st.subheader("🎨 Classificação da Carta de Controle")
                             
-                            # Calcular Cpk se limites de especificação estiverem disponíveis
-                            cpk = None
-                            lse = st.session_state.lse_values.get(coluna_valor, 0)
-                            lie = st.session_state.lie_values.get(coluna_valor, 0)
-                            
-                            if lse != 0 and lie != 0 and lse > lie:
-                                try:
-                                    resultados_capabilidade = calcular_indices_capabilidade(
-                                        dados_processados, coluna_valor, lse, lie
-                                    )
-                                    if resultados_capabilidade and 'cpk' in resultados_capabilidade:
-                                        cpk = resultados_capabilidade['cpk']
-                                except:
-                                    cpk = None
-                            
-                            # Calcular percentual de pontos fora de controle
-                            total_pontos_xbar = len(xbar) if xbar is not None else 0
-                            total_pontos_s = len(s) if s is not None else 0
-                            total_pontos = total_pontos_xbar + total_pontos_s
+                            cpk = stats_xbar.get('cpk')
+                            total_pontos = len(xbar)
                             
                             if total_pontos > 0:
-                                percentual_fora_xbar = (pontos_fora_xbar / total_pontos_xbar * 100) if total_pontos_xbar > 0 else 0
-                                percentual_fora_s = (pontos_fora_s / total_pontos_s * 100) if total_pontos_s > 0 else 0
-                                
-                                # Usar o maior percentual para classificação
-                                percentual_fora = max(percentual_fora_xbar, percentual_fora_s)
-                                
                                 # Classificar a carta de controle
-                                cor, classificacao = classificar_carta_controle(cpk, pontos_fora_xbar + pontos_fora_s, total_pontos)
+                                cor, classificacao = classificar_carta_controle(cpk, pontos_fora_xbar, total_pontos)
                                 
                                 # Exibir indicador de classificação
                                 html_classificacao = criar_indicador_classificacao(
-                                    cor, classificacao, cpk, percentual_fora
+                                    cor, classificacao, cpk, stats_xbar['percentual_fora_controle']
                                 )
                                 st.markdown(html_classificacao, unsafe_allow_html=True)
                             else:
@@ -1532,78 +1429,64 @@ def main():
                         )
                         
                         if individuais is not None:
-                            # Carta de Individuais - TELA CHEIA
+                            # Carta de Individuais com especificações
                             st.subheader(f"📊 Carta de Individuais - {coluna_valor}")
-                            fig_i, pontos_fora_i = plotar_carta_controle(
-                                individuais, limites_i,
+                            fig_i, pontos_fora_i, pontos_fora_esp_i = plotar_carta_controle_com_especificacoes(
+                                individuais, limites_i, (lse_carta, lie_carta),
                                 f"Carta de Individuais - {coluna_valor}", "individual"
                             )
                             st.plotly_chart(fig_i, use_container_width=True)
                             
-                            # Carta de Amplitude Móvel - TELA CHEIA
+                            # Carta de Amplitude Móvel
                             st.subheader(f"📊 Carta de Amplitude Móvel - {coluna_valor}")
-                            fig_mr, pontos_fora_mr = plotar_carta_controle(
-                                mr, limites_mr,
+                            fig_mr, pontos_fora_mr, _ = plotar_carta_controle_com_especificacoes(
+                                mr, limites_mr, (None, None),  # MR não usa LSE/LIE
                                 f"Carta de Amplitude Móvel - {coluna_valor}", "mr"
                             )
                             st.plotly_chart(fig_mr, use_container_width=True)
                             
                             # Estatísticas
                             st.subheader("📊 Estatísticas da Carta de Controle")
+                            
+                            # Estatísticas para individuais
+                            stats_i = calcular_estatisticas_carta_com_especificacoes(
+                                individuais, limites_i, (lse_carta, lie_carta)
+                            )
+                            
                             col_stat1, col_stat2, col_stat3 = st.columns(3)
                             with col_stat1:
-                                st.metric("LSC Individuais", f"{limites_i[0]:.4f}")
+                                st.metric("LSC Individuais (3σ)", f"{limites_i[0]:.4f}")
                                 st.metric("LC Individuais", f"{limites_i[1]:.4f}")
-                                st.metric("LIC Individuais", f"{limites_i[2]:.4f}")
+                                st.metric("LIC Individuais (3σ)", f"{limites_i[2]:.4f}")
                             with col_stat2:
-                                st.metric("LSC MR", f"{limites_mr[0]:.4f}")
-                                st.metric("LC MR", f"{limites_mr[1]:.4f}")
-                                st.metric("LIC MR", f"{limites_mr[2]:.4f}")
+                                st.metric("LSE", f"{lse_carta:.4f}" if lse_carta != 0 else "Não definido")
+                                st.metric("LIE", f"{lie_carta:.4f}" if lie_carta != 0 else "Não definido")
+                                st.metric("Média", f"{stats_i['media']:.4f}")
                             with col_stat3:
-                                st.metric("Pontos Fora (Individuais)", pontos_fora_i)
-                                st.metric("Pontos Fora (MR)", pontos_fora_mr)
+                                st.metric("Pontos Fora Controle", pontos_fora_i)
+                                st.metric("Pontos Fora Especificação", pontos_fora_esp_i)
+                                if 'cpk' in stats_i:
+                                    st.metric("Cpk", f"{stats_i['cpk']:.3f}")
                             
-                            # ========== CLASSIFICAÇÃO CORRIGIDA PARA CARTA DE CONTROLE ==========
+                            # ========== CLASSIFICAÇÃO DA CARTA ==========
                             st.subheader("🎨 Classificação da Carta de Controle")
                             
-                            # Calcular Cpk se limites de especificação estiverem disponíveis
-                            cpk = None
-                            lse = st.session_state.lse_values.get(coluna_valor, 0)
-                            lie = st.session_state.lie_values.get(coluna_valor, 0)
-                            
-                            if lse != 0 and lie != 0 and lse > lie:
-                                try:
-                                    resultados_capabilidade = calcular_indices_capabilidade(
-                                        dados_processados, coluna_valor, lse, lie
-                                    )
-                                    if resultados_capabilidade and 'cpk' in resultados_capabilidade:
-                                        cpk = resultados_capabilidade['cpk']
-                                except:
-                                    cpk = None
-                            
-                            # Calcular percentual de pontos fora de controle
-                            total_pontos_i = len(individuais) if individuais is not None else 0
-                            total_pontos_mr = len(mr) if mr is not None else 0
-                            total_pontos = total_pontos_i + total_pontos_mr
+                            cpk = stats_i.get('cpk')
+                            total_pontos = len(individuais)
                             
                             if total_pontos > 0:
-                                percentual_fora_i = (pontos_fora_i / total_pontos_i * 100) if total_pontos_i > 0 else 0
-                                percentual_fora_mr = (pontos_fora_mr / total_pontos_mr * 100) if total_pontos_mr > 0 else 0
-                                
-                                # Usar o maior percentual para classificação
-                                percentual_fora = max(percentual_fora_i, percentual_fora_mr)
-                                
                                 # Classificar a carta de controle
-                                cor, classificacao = classificar_carta_controle(cpk, pontos_fora_i + pontos_fora_mr, total_pontos)
+                                cor, classificacao = classificar_carta_controle(cpk, pontos_fora_i, total_pontos)
                                 
                                 # Exibir indicador de classificação
                                 html_classificacao = criar_indicador_classificacao(
-                                    cor, classificacao, cpk, percentual_fora
+                                    cor, classificacao, cpk, stats_i['percentual_fora_controle']
                                 )
                                 st.markdown(html_classificacao, unsafe_allow_html=True)
                             else:
                                 st.warning("Não há dados suficientes para classificação")
                 
+                # Cartas P e C (implementação similar)
                 elif tipo_carta == "P (Proporção de Defeituosos)":
                     if 'coluna_defeitos' in locals() and 'coluna_tamanho_amostra' in locals():
                         p, n, limites_p = criar_carta_controle_p(
@@ -1613,8 +1496,8 @@ def main():
                         
                         if p is not None:
                             st.subheader(f"📊 Carta P - Proporção de Defeituosos")
-                            fig_p, pontos_fora_p = plotar_carta_controle(
-                                p, limites_p,
+                            fig_p, pontos_fora_p, _ = plotar_carta_controle_com_especificacoes(
+                                p, limites_p, (None, None),
                                 f"Carta P - Proporção de Defeituosos", "p"
                             )
                             st.plotly_chart(fig_p, use_container_width=True)
@@ -1632,29 +1515,6 @@ def main():
                             with col_stat3:
                                 st.metric("Pontos Fora", pontos_fora_p)
                                 st.metric("Total Grupos", len(p) if p is not None else 0)
-                            
-                            # ========== CLASSIFICAÇÃO CORRIGIDA PARA CARTA DE CONTROLE ==========
-                            st.subheader("🎨 Classificação da Carta de Controle")
-                            
-                            # Para carta P, consideramos Cpk = None (não aplicável)
-                            cpk = None
-                            
-                            # Calcular percentual de pontos fora de controle
-                            total_pontos = len(p) if p is not None else 0
-                            
-                            if total_pontos > 0:
-                                percentual_fora = (pontos_fora_p / total_pontos * 100)
-                                
-                                # Classificar a carta de controle
-                                cor, classificacao = classificar_carta_controle(cpk, pontos_fora_p, total_pontos)
-                                
-                                # Exibir indicador de classificação
-                                html_classificacao = criar_indicador_classificacao(
-                                    cor, classificacao, cpk, percentual_fora
-                                )
-                                st.markdown(html_classificacao, unsafe_allow_html=True)
-                            else:
-                                st.warning("Não há dados suficientes para classificação")
                 
                 elif tipo_carta == "C (Número de Defeitos)":
                     if 'coluna_defeitos' in locals():
@@ -1665,8 +1525,8 @@ def main():
                         
                         if c is not None:
                             st.subheader(f"📊 Carta C - Número de Defeitos")
-                            fig_c, pontos_fora_c = plotar_carta_controle(
-                                c, limites_c,
+                            fig_c, pontos_fora_c, _ = plotar_carta_controle_com_especificacoes(
+                                c, limites_c, (None, None),
                                 f"Carta C - Número de Defeitos", "c"
                             )
                             st.plotly_chart(fig_c, use_container_width=True)
@@ -1684,29 +1544,6 @@ def main():
                             with col_stat3:
                                 st.metric("Pontos Fora", pontos_fora_c)
                                 st.metric("Total Grupos", len(c) if c is not None else 0)
-                            
-                            # ========== CLASSIFICAÇÃO CORRIGIDA PARA CARTA DE CONTROLE ==========
-                            st.subheader("🎨 Classificação da Carta de Controle")
-                            
-                            # Para carta C, consideramos Cpk = None (não aplicável)
-                            cpk = None
-                            
-                            # Calcular percentual de pontos fora de controle
-                            total_pontos = len(c) if c is not None else 0
-                            
-                            if total_pontos > 0:
-                                percentual_fora = (pontos_fora_c / total_pontos * 100)
-                                
-                                # Classificar a carta de controle
-                                cor, classificacao = classificar_carta_controle(cpk, pontos_fora_c, total_pontos)
-                                
-                                # Exibir indicador de classificação
-                                html_classificacao = criar_indicador_classificacao(
-                                    cor, classificacao, cpk, percentual_fora
-                                )
-                                st.markdown(html_classificacao, unsafe_allow_html=True)
-                            else:
-                                st.warning("Não há dados suficientes para classificação")
                 
                 # Análise de padrões
                 st.subheader("🔍 Análise de Padrões na Carta de Controle")
@@ -1714,20 +1551,22 @@ def main():
                 col_pad1, col_pad2 = st.columns(2)
                 with col_pad1:
                     st.info("""
-                    **📈 Interpretação Básica:**
-                    - **Processo Estável**: Pontos dentro dos limites, sem padrões especiais
-                    - **Fora de Controle**: Pontos além dos limites LSC/LIC
-                    - **Tendências**: 7+ pontos consecutivos acima/abaixo da linha central
-                    - **Oscilações**: Padrões sistemáticos de variação
+                    **📈 Interpretação dos Limites:**
+                    - **Limites de Controle (3σ)**: Variação natural do processo
+                    - **Limites de Especificação**: Requisitos do cliente
+                    - **Processo Capaz**: Limites de controle dentro dos limites de especificação
+                    - **Fora de Especificação**: Pontos além de LSE/LIE (⭐ laranja)
+                    - **Fora de Controle**: Pontos além de LSC/LIC (✖️ vermelho)
                     """)
                 
                 with col_pad2:
                     st.warning("""
-                    **🚨 Padrões Especiais a Observar:**
-                    - 7 pontos consecutivos do mesmo lado da linha central
-                    - 7 pontos consecutivos crescentes ou decrescentes
-                    - Muitos pontos próximos aos limites de controle
-                    - Poucos pontos próximos à linha central
+                    **🚨 Situações Críticas:**
+                    - Pontos fora de especificação (⭐)
+                    - Processo incapaz (Cpk < 1.33)
+                    - Muitos pontos fora de controle
+                    - Tendências sistemáticas
+                    - Processo instável
                     """)
             
             except Exception as e:
@@ -1742,75 +1581,72 @@ def main():
             coluna_controle = st.selectbox("Selecione a variável para controle:", colunas_numericas,
                                           key=generate_unique_key("control_chart_var", "tab6"))
             
-            coluna_data_controle = None
-            if colunas_data:
-                coluna_data_controle = st.selectbox("Selecione a coluna de data (opcional):", 
-                                                   [""] + colunas_data,
-                                                   key=generate_unique_key("control_chart_date", "tab6"))
-            
             if coluna_controle:
-                # Gráfico de controle
+                # Gráfico de controle simples
                 try:
-                    if coluna_data_controle and coluna_data_controle != "":
-                        fig_controle, lsc, lc, lic = criar_grafico_controle(
-                            dados_processados, coluna_controle, coluna_data_controle
-                        )
-                    else:
-                        fig_controle, lsc, lc, lic = criar_grafico_controle(
-                            dados_processados, coluna_controle
-                        )
-                    
-                    st.plotly_chart(fig_controle, use_container_width=True)
-                    
-                    # Estatísticas de controle
-                    st.subheader("📊 Estatísticas de Controle")
-                    
                     dados_controle = dados_processados[coluna_controle].dropna()
-                    media = dados_controle.mean()
-                    std = dados_controle.std()
                     
-                    col_ctrl1, col_ctrl2, col_ctrl3, col_ctrl4 = st.columns(4)
-                    with col_ctrl1:
-                        st.metric("Linha Central (LC)", f"{lc:.4f}")
-                        st.metric("Média", f"{media:.4f}")
-                    with col_ctrl2:
-                        st.metric("LSC", f"{lsc:.4f}")
-                        st.metric("+3σ", f"{media + 3*std:.4f}")
-                    with col_ctrl3:
-                        st.metric("LIC", f"{lic:.4f}")
-                        st.metric("-3σ", f"{media - 3*std:.4f}")
-                    with col_ctrl4:
-                        # Pontos fora dos limites
-                        pontos_fora = ((dados_controle > lsc) | (dados_controle < lic)).sum()
-                        percentual_fora = (pontos_fora / len(dados_controle)) * 100 if len(dados_controle) > 0 else 0
-                        st.metric("Pontos Fora", f"{pontos_fora} ({percentual_fora:.1f}%)")
-                    
-                    # Análise de capacidade do processo
-                    st.subheader("📈 Análise de Capacidade do Processo")
-                    
-                    lse = st.session_state.lse_values.get(coluna_controle, 0)
-                    lie = st.session_state.lie_values.get(coluna_controle, 0)
-                    
-                    if lse != 0 and lie != 0 and lse > lie:
-                        capacidade = analise_capacidade_processo(dados_processados, coluna_controle, lse, lie)
+                    if len(dados_controle) > 0:
+                        # Calcular limites de controle 3 sigma
+                        media = dados_controle.mean()
+                        std = dados_controle.std()
                         
-                        if capacidade and 'cp' in capacidade:
-                            col_cap1, col_cap2, col_cap3 = st.columns(3)
-                            with col_cap1:
-                                st.metric("Cp", f"{capacidade['cp']:.3f}")
-                                st.metric("Cpk", f"{capacidade['cpk']:.3f}")
-                            with col_cap2:
-                                st.metric("LSE", f"{lse:.3f}")
-                                st.metric("LIE", f"{lie:.3f}")
-                            with col_cap3:
-                                # Interpretação da capacidade
-                                cpk = capacidade['cpk']
-                                if cpk >= 1.33:
-                                    st.success("✅ Processo Capaz")
-                                elif cpk >= 1.0:
-                                    st.warning("⚠️ Processo Marginalmente Capaz")
-                                else:
-                                    st.error("❌ Processo Incapaz")
+                        lsc = media + 3 * std
+                        lic = media - 3 * std
+                        lc = media
+                        
+                        fig = go.Figure()
+                        
+                        # Adicionar pontos
+                        fig.add_trace(go.Scatter(
+                            x=list(range(len(dados_controle))),
+                            y=dados_controle,
+                            mode='lines+markers',
+                            name='Valores',
+                            line=dict(color='blue', width=2),
+                            marker=dict(size=6)
+                        ))
+                        
+                        # Adicionar linhas de controle
+                        fig.add_hline(y=lsc, line_dash="dash", line_color="red", 
+                                      annotation_text="LSC (3σ)", annotation_position="right")
+                        fig.add_hline(y=lc, line_dash="dash", line_color="green", 
+                                      annotation_text="LC", annotation_position="right")
+                        fig.add_hline(y=lic, line_dash="dash", line_color="red", 
+                                      annotation_text="LIC (3σ)", annotation_position="right")
+                        
+                        fig.update_layout(
+                            title=f"Gráfico de Controle Simples - {coluna_controle}",
+                            xaxis_title="Amostra",
+                            yaxis_title=coluna_controle,
+                            showlegend=True,
+                            height=500
+                        )
+                        
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        # Estatísticas
+                        st.subheader("📊 Estatísticas de Controle")
+                        
+                        pontos_fora = ((dados_controle > lsc) | (dados_controle < lic)).sum()
+                        percentual_fora = (pontos_fora / len(dados_controle)) * 100
+                        
+                        col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+                        with col_stat1:
+                            st.metric("Média", f"{media:.4f}")
+                            st.metric("Desvio Padrão", f"{std:.4f}")
+                        with col_stat2:
+                            st.metric("LSC (3σ)", f"{lsc:.4f}")
+                            st.metric("LIC (3σ)", f"{lic:.4f}")
+                        with col_stat3:
+                            st.metric("Pontos Fora", pontos_fora)
+                            st.metric("% Fora", f"{percentual_fora:.1f}%")
+                        with col_stat4:
+                            st.metric("Amostras", len(dados_controle))
+                            st.metric("Amplitude", f"{dados_controle.max() - dados_controle.min():.4f}")
+                    
+                    else:
+                        st.warning("Não há dados suficientes para criar o gráfico de controle")
                 
                 except Exception as e:
                     st.error(f"Erro ao criar gráfico de controle: {str(e)}")
@@ -1884,10 +1720,40 @@ def main():
                                 st.plotly_chart(fig_hist, use_container_width=True)
                             
                             with col_graf2:
-                                # Gráfico de controle
-                                fig_controle = criar_grafico_controle_capabilidade(
-                                    dados_processados, coluna_capabilidade, lse_cap, lie_cap, resultados
+                                # Gráfico de controle para capabilidade
+                                fig_controle = go.Figure()
+                                dados_controle = dados_processados[coluna_capabilidade].dropna()
+                                
+                                fig_controle.add_trace(go.Scatter(
+                                    x=list(range(len(dados_controle))),
+                                    y=dados_controle,
+                                    mode='lines+markers',
+                                    name='Valores',
+                                    line=dict(color='blue', width=1),
+                                    marker=dict(size=4)
+                                ))
+                                
+                                # Média do processo
+                                fig_controle.add_hline(y=resultados['media'], line_dash="solid", line_color="green",
+                                                     annotation_text="Média", annotation_position="right")
+                                
+                                # Limites de especificação
+                                if lse_cap != 0:
+                                    fig_controle.add_hline(y=lse_cap, line_dash="dash", line_color="red",
+                                                         annotation_text="LSE", annotation_position="right")
+                                
+                                if lie_cap != 0:
+                                    fig_controle.add_hline(y=lie_cap, line_dash="dash", line_color="red",
+                                                         annotation_text="LIE", annotation_position="right")
+                                
+                                fig_controle.update_layout(
+                                    title=f"Gráfico de Controle - {coluna_capabilidade}",
+                                    xaxis_title="Amostra",
+                                    yaxis_title=coluna_capabilidade,
+                                    showlegend=True,
+                                    height=400
                                 )
+                                
                                 st.plotly_chart(fig_controle, use_container_width=True)
                             
                             # Índices de Capabilidade
@@ -1965,8 +1831,20 @@ def main():
                             # Interpretação
                             st.subheader("🔍 Interpretação da Capabilidade")
                             
-                            interpretacao = interpretar_capabilidade(resultados)
-                            st.info(interpretacao)
+                            if 'cpk' in resultados:
+                                cpk = resultados['cpk']
+                                if cpk >= 1.67:
+                                    st.success("✅ **Excelente** - Processo altamente capaz (Cpk ≥ 1.67)")
+                                elif cpk >= 1.33:
+                                    st.success("✅ **Muito Bom** - Processo capaz (1.33 ≤ Cpk < 1.67)")
+                                elif cpk >= 1.0:
+                                    st.warning("⚠️ **Aceitável** - Processo marginalmente capaz (1.0 ≤ Cpk < 1.33)")
+                                elif cpk >= 0.67:
+                                    st.error("❌ **Insatisfatório** - Processo incapaz (0.67 ≤ Cpk < 1.0)")
+                                else:
+                                    st.error("🚨 **Crítico** - Processo totalmente incapaz (Cpk < 0.67)")
+                            else:
+                                st.info("ℹ️ **Informação** - Cpk não pode ser calculado sem ambos os limites de especificação")
                             
                             # Tabela de Referência
                             st.subheader("📋 Tabela de Referência - Índices de Capabilidade")
