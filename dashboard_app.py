@@ -134,6 +134,13 @@ st.markdown("""
         padding-bottom: 0.5rem;
         margin-top: 2rem;
     }
+    .residual-analysis {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+        margin: 1rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -831,6 +838,134 @@ def calcular_regressao_linear(x, y):
     r_squared = 1 - (ss_res / ss_tot) if ss_tot != 0 else 0
     
     return slope, intercept, r_squared
+
+# ========== FUNÇÕES PARA ANÁLISE DE RESÍDUOS ==========
+
+def analise_residuos_completa(residuos, previsoes, variavel_resposta):
+    """Realiza análise completa dos resíduos da regressão"""
+    
+    analise = {}
+    
+    # Estatísticas básicas dos resíduos
+    analise['estatisticas'] = {
+        'media': np.mean(residuos),
+        'mediana': np.median(residuos),
+        'desvio_padrao': np.std(residuos),
+        'min': np.min(residuos),
+        'max': np.max(residuos),
+        'assimetria': pd.Series(residuos).skew(),
+        'curtose': pd.Series(residuos).kurtosis()
+    }
+    
+    # Teste de normalidade dos resíduos (aproximado)
+    analise['normalidade'] = {
+        'shapiro_wilk_aproximado': teste_normalidade_manual(residuos),
+        'interpretacao': "Resíduos normais" if abs(pd.Series(residuos).skew()) < 1 else "Resíduos não normais"
+    }
+    
+    # Detecção de outliers nos resíduos
+    outliers_residuos, _ = detectar_outliers_zscore(pd.DataFrame({'residuos': residuos}), 'residuos')
+    analise['outliers'] = {
+        'quantidade': len(outliers_residuos),
+        'percentual': (len(outliers_residuos) / len(residuos)) * 100
+    }
+    
+    # Homocedasticidade (variância constante)
+    correlacao_previsoes_residuos = np.corrcoef(previsoes, residuos)[0, 1]
+    analise['homocedasticidade'] = {
+        'correlacao_previsoes_residuos': correlacao_previsoes_residuos,
+        'interpretacao': "Homocedástico" if abs(correlacao_previsoes_residuos) < 0.3 else "Heterocedástico"
+    }
+    
+    return analise
+
+def criar_graficos_residuos(residuos, previsoes, variavel_resposta):
+    """Cria gráficos completos para análise de resíduos"""
+    
+    fig_residuos_vs_previsoes = go.Figure()
+    fig_residuos_vs_previsoes.add_trace(go.Scatter(
+        x=previsoes,
+        y=residuos,
+        mode='markers',
+        name='Resíduos',
+        marker=dict(color='blue', size=6)
+    ))
+    fig_residuos_vs_previsoes.add_hline(y=0, line_dash="dash", line_color="red")
+    fig_residuos_vs_previsoes.update_layout(
+        title="Resíduos vs Valores Preditos",
+        xaxis_title="Valores Preditos",
+        yaxis_title="Resíduos",
+        showlegend=False
+    )
+    
+    # Histograma dos resíduos
+    fig_histograma_residuos = px.histogram(
+        x=residuos,
+        nbins=30,
+        title="Distribuição dos Resíduos",
+        labels={'x': 'Resíduos', 'y': 'Frequência'}
+    )
+    fig_histograma_residuos.add_vline(x=0, line_dash="dash", line_color="red")
+    
+    # QQ Plot dos resíduos
+    fig_qq_residuos = criar_qq_plot_correto(pd.Series(residuos))
+    fig_qq_residuos.update_layout(title="Q-Q Plot dos Resíduos")
+    
+    # Resíduos vs Ordem (para detectar autocorrelação)
+    fig_residuos_ordem = go.Figure()
+    fig_residuos_ordem.add_trace(go.Scatter(
+        x=list(range(len(residuos))),
+        y=residuos,
+        mode='lines+markers',
+        name='Resíduos',
+        line=dict(color='blue', width=1),
+        marker=dict(size=4)
+    ))
+    fig_residuos_ordem.add_hline(y=0, line_dash="dash", line_color="red")
+    fig_residuos_ordem.update_layout(
+        title="Resíduos vs Ordem das Observações",
+        xaxis_title="Ordem das Observações",
+        yaxis_title="Resíduos",
+        showlegend=False
+    )
+    
+    return {
+        'residuos_vs_previsoes': fig_residuos_vs_previsoes,
+        'histograma_residuos': fig_histograma_residuos,
+        'qq_plot_residuos': fig_qq_residuos,
+        'residuos_ordem': fig_residuos_ordem
+    }
+
+def interpretar_analise_residuos(analise_residuos):
+    """Fornece interpretação completa da análise de resíduos"""
+    
+    interpretacoes = []
+    
+    # Normalidade
+    if analise_residuos['normalidade']['shapiro_wilk_aproximado'] > 0.05:
+        interpretacoes.append("✅ **Normalidade**: Os resíduos parecem seguir uma distribuição normal")
+    else:
+        interpretacoes.append("⚠️ **Normalidade**: Os resíduos podem não ser normais")
+    
+    # Outliers
+    if analise_residuos['outliers']['percentual'] < 5:
+        interpretacoes.append("✅ **Outliers**: Poucos outliers detectados nos resíduos")
+    else:
+        interpretacoes.append(f"⚠️ **Outliers**: {analise_residuos['outliers']['percentual']:.1f}% dos resíduos são outliers")
+    
+    # Homocedasticidade
+    if analise_residuos['homocedasticidade']['interpretacao'] == "Homocedástico":
+        interpretacoes.append("✅ **Homocedasticidade**: Variância constante dos resíduos")
+    else:
+        interpretacoes.append("⚠️ **Homocedasticidade**: Possível heterocedasticidade detectada")
+    
+    # Media dos resíduos
+    if abs(analise_residuos['estatisticas']['media']) < 0.01:
+        interpretacoes.append("✅ **Média dos resíduos**: Próxima de zero (bom indicador)")
+    else:
+        interpretacoes.append("⚠️ **Média dos resíduos**: Distante de zero")
+    
+    return interpretacoes
 
 # ========== FUNÇÕES PARA CARTA DE CONTROLE COM LSE/LIE ==========
 
@@ -2715,16 +2850,84 @@ def main():
                             'Valor-p': '{:.4f}'
                         }))
                         
-                        # Gráfico de resíduos
-                        st.subheader("📈 Análise de Resíduos")
-                        fig_residuos = px.scatter(
-                            x=resultado_regressao['previsoes'],
-                            y=resultado_regressao['residuos'],
-                            labels={'x': 'Valores Preditos', 'y': 'Resíduos'},
-                            title="Gráfico de Resíduos vs Valores Preditos"
+                        # ========== ANÁLISE DE RESÍDUOS ==========
+                        st.subheader("🔍 Análise de Resíduos")
+                        
+                        # Realizar análise completa dos resíduos
+                        analise_residuos = analise_residuos_completa(
+                            resultado_regressao['residuos'],
+                            resultado_regressao['previsoes'],
+                            variavel_resposta
                         )
-                        fig_residuos.add_hline(y=0, line_dash="dash", line_color="red")
-                        st.plotly_chart(fig_residuos, use_container_width=True)
+                        
+                        # Criar gráficos de resíduos
+                        graficos_residuos = criar_graficos_residuos(
+                            resultado_regressao['residuos'],
+                            resultado_regressao['previsoes'],
+                            variavel_resposta
+                        )
+                        
+                        # Exibir gráficos em duas colunas
+                        col_res1, col_res2 = st.columns(2)
+                        
+                        with col_res1:
+                            st.plotly_chart(graficos_residuos['residuos_vs_previsoes'], use_container_width=True)
+                            st.plotly_chart(graficos_residuos['histograma_residuos'], use_container_width=True)
+                        
+                        with col_res2:
+                            st.plotly_chart(graficos_residuos['qq_plot_residuos'], use_container_width=True)
+                            st.plotly_chart(graficos_residuos['residuos_ordem'], use_container_width=True)
+                        
+                        # Estatísticas dos resíduos
+                        st.subheader("📊 Estatísticas dos Resíduos")
+                        
+                        col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+                        with col_stat1:
+                            st.metric("Média", f"{analise_residuos['estatisticas']['media']:.4f}")
+                            st.metric("Mediana", f"{analise_residuos['estatisticas']['mediana']:.4f}")
+                        with col_stat2:
+                            st.metric("Desvio Padrão", f"{analise_residuos['estatisticas']['desvio_padrao']:.4f}")
+                            st.metric("Assimetria", f"{analise_residuos['estatisticas']['assimetria']:.4f}")
+                        with col_stat3:
+                            st.metric("Curtose", f"{analise_residuos['estatisticas']['curtose']:.4f}")
+                            st.metric("Outliers", f"{analise_residuos['outliers']['quantidade']}")
+                        with col_stat4:
+                            st.metric("p-valor Normalidade", f"{analise_residuos['normalidade']['shapiro_wilk_aproximado']:.4f}")
+                            st.metric("Correlação Res-Pred", f"{analise_residuos['homocedasticidade']['correlacao_previsoes_residuos']:.4f}")
+                        
+                        # Interpretação da análise de resíduos
+                        st.subheader("📝 Interpretação da Análise de Resíduos")
+                        interpretacoes = interpretar_analise_residuos(analise_residuos)
+                        
+                        for interpretacao in interpretacoes:
+                            st.write(interpretacao)
+                        
+                        # Recomendações baseadas na análise de resíduos
+                        st.subheader("💡 Recomendações")
+                        
+                        if analise_residuos['normalidade']['shapiro_wilk_aproximado'] < 0.05:
+                            st.warning("""
+                            **⚠️ Resíduos não normais detectados:**
+                            - Considere transformar a variável resposta
+                            - Verifique a necessidade de modelos não lineares
+                            - Avalie a presença de outliers influentes
+                            """)
+                        
+                        if analise_residuos['homocedasticidade']['interpretacao'] == "Heterocedástico":
+                            st.warning("""
+                            **⚠️ Heterocedasticidade detectada:**
+                            - A variância dos resíduos não é constante
+                            - Considere usar modelos robustos
+                            - Transformações na variável resposta podem ajudar
+                            """)
+                        
+                        if analise_residuos['outliers']['percentual'] > 5:
+                            st.warning("""
+                            **⚠️ Muitos outliers nos resíduos:**
+                            - Verifique a qualidade dos dados
+                            - Considere remover ou tratar outliers
+                            - Avalie se há pontos influentes
+                            """)
         
         elif tipo_analise_avancada == "Análise Bayesiana (A/B Testing)":
             st.subheader("🎲 Análise Bayesiana para A/B Testing")
