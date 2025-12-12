@@ -102,89 +102,6 @@ except ImportError:
     stats = AlternativeStats
     st.warning("⚠️ **Scipy não está disponível no ambiente atual.** Algumas funcionalidades avançadas serão executadas com implementações alternativas. Para funcionalidades completas, instale scipy: `pip install scipy`")
 
-# ========== FUNÇÕES CORRIGIDAS PARA O ERRO ==========
-
-def criar_qq_plot_correto(data):
-    """Cria gráfico Q-Q correto passando pelo meio dos pontos"""
-    data_clean = data.dropna()
-    if len(data_clean) < 2:
-        return go.Figure()
-    
-    # Calcular quantis teóricos usando distribuição normal manualmente
-    n = len(data_clean)
-    # Gerar quantis teóricos para distribuição normal
-    theoretical_quantiles = np.sort(np.random.normal(0, 1, n))
-    sample_quantiles = np.sort(data_clean)
-    
-    # Normalizar os dados para melhor visualização
-    sample_mean = np.mean(sample_quantiles)
-    sample_std = np.std(sample_quantiles)
-    if sample_std > 0:
-        sample_quantiles = (sample_quantiles - sample_mean) / sample_std
-    
-    # Calcular linha de tendência para o Q-Q plot
-    z = np.polyfit(theoretical_quantiles, sample_quantiles, 1)
-    p = np.poly1d(z)
-    
-    fig = go.Figure()
-    
-    # Adicionar pontos
-    fig.add_trace(go.Scatter(
-        x=theoretical_quantiles,
-        y=sample_quantiles,
-        mode='markers',
-        name='Dados',
-        marker=dict(color='blue', size=6)
-    ))
-    
-    # Adicionar linha de tendência que passa pelo meio dos pontos
-    fig.add_trace(go.Scatter(
-        x=theoretical_quantiles,
-        y=p(theoretical_quantiles),
-        mode='lines',
-        name='Linha de Tendência',
-        line=dict(color='red', width=2)
-    ))
-    
-    fig.update_layout(
-        title="Gráfico Q-Q (Análise de Normalidade)",
-        xaxis_title="Quantis Teóricos",
-        yaxis_title="Quantis Amostrais",
-        showlegend=True
-    )
-    
-    return fig
-
-# Alias para manter compatibilidade com código existente
-def crfsr_qq_plot_correct(data):
-    """
-    Alias para manter compatibilidade com código existente.
-    Chama a função correta criar_qq_plot_correto.
-    """
-    return criar_qq_plot_correto(data)
-
-def crfsr_graffiobs_residues_completed(andline_residues, x_cells, y_cells, size_x, size_y):
-    """
-    Função corrigida para análise de resíduos em cartas de controle.
-    Esta função estava causando o erro no traceback.
-    """
-    try:
-        # Verificar se temos dados de resíduos
-        if 'residues' not in andline_residues:
-            return None
-        
-        # Usar a função correta para Q-Q plot
-        qq_plot = criar_qq_plot_correto(andline_residues['residues'])
-        
-        # Aqui você pode adicionar mais processamento se necessário
-        # x_cells, y_cells, size_x, size_y são parâmetros adicionais
-        
-        return qq_plot
-    
-    except Exception as e:
-        st.error(f"Erro na análise de resíduos: {str(e)}")
-        return None
-
 # Configuração da página
 st.set_page_config(page_title="Dashboard de Análise de Processos - Avançado", layout="wide")
 
@@ -1887,6 +1804,57 @@ def calcular_estatisticas_correlacao(dados, eixo_x, eixo_y):
         st.error(f"Erro ao calcular estatísticas: {str(e)}")
         return None, None, None, None
 
+def criar_qq_plot_correto(data):
+    """Cria gráfico Q-Q correto passando pelo meio dos pontos"""
+    data_clean = data.dropna()
+    if len(data_clean) < 2:
+        return go.Figure()
+    
+    # Calcular quantis teóricos usando distribuição normal manualmente
+    n = len(data_clean)
+    # Gerar quantis teóricos para distribuição normal
+    theoretical_quantiles = np.sort(np.random.normal(0, 1, n))
+    sample_quantiles = np.sort(data_clean)
+    
+    # Normalizar os dados para melhor visualização
+    sample_mean = np.mean(sample_quantiles)
+    sample_std = np.std(sample_quantiles)
+    if sample_std > 0:
+        sample_quantiles = (sample_quantiles - sample_mean) / sample_std
+    
+    # Calcular linha de tendência para o Q-Q plot
+    z = np.polyfit(theoretical_quantiles, sample_quantiles, 1)
+    p = np.poly1d(z)
+    
+    fig = go.Figure()
+    
+    # Adicionar pontos
+    fig.add_trace(go.Scatter(
+        x=theoretical_quantiles,
+        y=sample_quantiles,
+        mode='markers',
+        name='Dados',
+        marker=dict(color='blue', size=6)
+    ))
+    
+    # Adicionar linha de tendência que passa pelo meio dos pontos
+    fig.add_trace(go.Scatter(
+        x=theoretical_quantiles,
+        y=p(theoretical_quantiles),
+        mode='lines',
+        name='Linha de Tendência',
+        line=dict(color='red', width=2)
+    ))
+    
+    fig.update_layout(
+        title="Gráfico Q-Q (Análise de Normalidade)",
+        xaxis_title="Quantis Teóricos",
+        yaxis_title="Quantis Amostrais",
+        showlegend=True
+    )
+    
+    return fig
+
 # ========== FUNÇÃO MAIN COMPLETA ==========
 
 def main():
@@ -2793,17 +2761,19 @@ def main():
                 key=generate_unique_key("capabilidade_col", "tab6")
             )
             
+            #1. Alvo (Primeiro)
             # Configuração dos limites
             st.subheader("🎯 Configuração dos Limites de Especificação")
             
             col_lim1, col_lim2, col_lim3 = st.columns(3)
             with col_lim1:
-                lse_cap = st.number_input(
-                    "LSE (Limite Superior de Especificação):",
-                    value=float(st.session_state.lse_values.get(coluna_capabilidade, 0)),
-                    key=generate_unique_key("lse_cap", coluna_capabilidade)
+                alvo_cap = st.number_input(
+                    "Alvo (Valor Ideal Opcional):",
+                    value=float(lse_cap + lie_cap) / 2 if lse_cap != 0 and lie_cap != 0 else 0),
+                    key=generate_unique_key("alvo_cap", coluna_capabilidade)
                 )
             
+            #2. LIE (Segundo)
             with col_lim2:
                 lie_cap = st.number_input(
                     "LIE (Limite Inferior de Especificação):",
@@ -2811,11 +2781,12 @@ def main():
                     key=generate_unique_key("lie_cap", coluna_capabilidade)
                 )
             
+            #3. LSE (Terceiro)
             with col_lim3:
-                alvo_cap = st.number_input(
-                    "Alvo (Valor Ideal - Opcional):",
-                    value=float((lse_cap + lie_cap) / 2 if lse_cap != 0 and lie_cap != 0 else 0),
-                    key=generate_unique_key("alvo_cap", coluna_capabilidade)
+                lse_cap = st.number_input(
+                    "LSE (Limite Superior de Especificação):",
+                    value=float(st.session_state.lse_values.get(coluna_capabilidade, 0)),
+                    key=generate_unique_key("lse_cap", coluna_capabilidade)
                 )
             
             # Botão para executar análise
