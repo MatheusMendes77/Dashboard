@@ -420,7 +420,7 @@ elif calc_type == "Fouling & Monitoramento":
                 
             with col_r2:
                 st.metric("Vazão Estimada", f"{F_estimated:.2f} kg/s")
-                st.metric("Fouling por ΔP", f"{founing_percent:.1f}%")
+                st.metric("Fouling por ΔP", f"{fouling_percent:.1f}%")  # ← AQUI ESTAVA O ERRO!
                 st.metric("Desvio Vazão", f"{deviation:.1f}%", 
                          delta=f"{deviation:.1f}%", 
                          delta_color="inverse")
@@ -429,7 +429,7 @@ elif calc_type == "Fouling & Monitoramento":
             st.subheader("🎯 Recomendação")
             if fouling_percent > 20:
                 st.error("⚠️ **ALERTA:** Fouling severo (>20%). Programar limpeza imediata.")
-            elif founing_percent > 10:
+            elif fouling_percent > 10:  # ← Também corrigir aqui se necessário
                 st.warning("⚠️ **ATENÇÃO:** Fouling moderado (10-20%). Monitorar de perto.")
             else:
                 st.success("✅ Condição aceitável (<10%). Continuar operação normal.")
@@ -478,7 +478,6 @@ elif calc_type == "Fouling & Monitoramento":
         
         fig.tight_layout()
         st.pyplot(fig)
-
         # Tabela resumo das temperaturas
         st.subheader("📋 Resumo de Temperaturas")
         
