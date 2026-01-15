@@ -9,11 +9,9 @@ def formatar_numero(valor, casas_decimais=3):
         if valor is None:
             return "0,0"
         
-        # Verifica se é NaN
         if pd.isna(valor):
             return "0,0"
             
-        # Formata com o número correto de casas decimais
         format_string = f"{{:.{casas_decimais}f}}"
         numero_formatado = format_string.format(float(valor))
         return numero_formatado.replace('.', ',')
@@ -92,31 +90,12 @@ st.markdown("""
         margin-top: 20px;
         font-size: 16px;
     }
-    .results-grid-container {
-        display: flex;
-        justify-content: center;
-        padding: 0 20px;
-    }
-    .results-column {
-        flex: 1;
-        max-width: 500px;
-        margin: 0 10px;
-    }
-    .consistency-check {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 40px auto 20px auto;
-        text-align: center;
-        border: 1px solid #e9ecef;
-        max-width: 900px;
-    }
     .button-row {
         display: flex;
         justify-content: center;
         gap: 20px;
-        margin-top: 30px;
-        max-width: 900px;
+        margin-top: 40px;
+        max-width: 600px;
         margin-left: auto;
         margin-right: auto;
     }
@@ -189,10 +168,6 @@ with st.sidebar:
     st.markdown('<div class="sidebar-header">Selecionar Ciclo para Cálculos</div>', unsafe_allow_html=True)
     
     if ciclos_calculados:
-        # Mostrar os ciclos calculados
-        for param, ciclo in ciclos_calculados.items():
-            st.text(f"{param}: {formatar_numero(ciclo, 2)} vezes")
-        
         # Criar opções para seleção
         opcoes = list(ciclos_calculados.keys())
         opcoes.insert(0, "Usar valor manual")
@@ -256,10 +231,7 @@ if st.session_state.calcular:
         # 7. Reposição
         reposicao = evaporacao + perda_liquida
         
-        # Container com duas colunas
-        st.markdown('<div class="results-grid-container">', unsafe_allow_html=True)
-        
-        # Coluna da Esquerda
+        # Layout com duas colunas
         col1, col2 = st.columns(2)
         
         with col1:
@@ -336,127 +308,115 @@ if st.session_state.calcular:
             </div>
             ''', unsafe_allow_html=True)
         
-        st.markdown('</div>', unsafe_allow_html=True)  # Fecha results-grid-container
+        # Botões para ações
+        st.markdown('<div class="button-row">', unsafe_allow_html=True)
         
-        # Verificações de consistência (mais discreto)
-        st.markdown('<div class="consistency-check">', unsafe_allow_html=True)
-        st.markdown("### ✅ Verificação de Consistência")
+        col_b1, col_b2 = st.columns(2)
         
-        col_v1, col_v2 = st.columns(2)
+        with col_b1:
+            if st.button("🔄 Novo Cálculo", use_container_width=True):
+                st.session_state.calcular = False
+                st.rerun()
         
-        with col_v1:
-            st.markdown(f"**Evaporação + Perda Líquida = Reposição**")
-            st.markdown(f"`{formatar_numero(evaporacao, 3)} + {formatar_numero(perda_liquida, 3)} = {formatar_numero(reposicao, 3)} m³/h`")
+        with col_b2:
+            # Criar DataFrame para exportação
+            dados_exportacao = {
+                "Parâmetro": [
+                    "Vazão de Recirculação (m³/h)",
+                    "Volume Estático (m³)",
+                    "Temperatura de Retorno (°C)",
+                    "Temperatura de Bacia (°C)",
+                    "% Arraste",
+                    "% Utilização",
+                    "Ciclos de Concentração (vezes)",
+                    "Delta Temperatura (°C)",
+                    "Evaporação (m³/h)",
+                    "Perda Líquida (m³/h)",
+                    "HTI (h)",
+                    "Perda por Arraste (m³/h)",
+                    "Purga do Sistema (m³/h)",
+                    "Reposição (m³/h)"
+                ],
+                "Valor": [
+                    formatar_numero(VZ_rec, 2),
+                    formatar_numero(Vol_estatico, 2),
+                    formatar_numero(T_retorno, 1),
+                    formatar_numero(T_bacia, 1),
+                    formatar_numero(perc_arraste, 4),
+                    formatar_numero(perc_utilizacao, 1),
+                    formatar_numero(ciclos, 2),
+                    formatar_numero(delta_T, 2),
+                    formatar_numero(evaporacao, 3),
+                    formatar_numero(perda_liquida, 3),
+                    formatar_numero(HTI, 2),
+                    formatar_numero(perda_arraste, 3),
+                    formatar_numero(purgas, 3),
+                    formatar_numero(reposicao, 3)
+                ]
+            }
             
-        with col_v2:
-            st.markdown(f"**Perda Líquida = Purga + Arraste**")
-            st.markdown(f"`{formatar_numero(perda_liquida, 3)} = {formatar_numero(purgas, 3)} + {formatar_numero(perda_arraste, 3)} m³/h`")
+            export_df = pd.DataFrame(dados_exportacao)
+            csv = export_df.to_csv(index=False, sep=';', decimal=',')
+            
+            st.download_button(
+                label="📥 Exportar CSV",
+                data=csv,
+                file_name="resultados_torre_resfriamento.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
         
         st.markdown('</div>', unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"Erro nos cálculos: {str(e)}")
-    
-    # Botões para ações (centralizados)
-    st.markdown('<div class="button-row">', unsafe_allow_html=True)
-    
-    col_b1, col_b2, col_b3 = st.columns([1, 1, 1])
-    
-    with col_b1:
-        if st.button("🔄 Novo Cálculo", use_container_width=True):
-            st.session_state.calcular = False
-            st.rerun()
-    
-    with col_b2:
-        if st.button("📋 Ver Dados de Entrada", use_container_width=True):
-            with st.expander("📊 Dados de Entrada Utilizados", expanded=True):
-                st.write(f"**Vazão de Recirculação:** {formatar_numero(VZ_rec, 2)} m³/h")
-                st.write(f"**Volume Estático:** {formatar_numero(Vol_estatico, 2)} m³")
-                st.write(f"**Temperatura de Retorno:** {formatar_numero(T_retorno, 1)} °C")
-                st.write(f"**Temperatura de Bacia:** {formatar_numero(T_bacia, 1)} °C")
-                st.write(f"**% Arraste:** {formatar_numero(perc_arraste, 4)} %")
-                st.write(f"**% Utilização:** {formatar_numero(perc_utilizacao, 1)} %")
-                st.write(f"**Ciclos Selecionados:** {formatar_numero(ciclos, 2)} vezes")
-    
-    with col_b3:
-        # Criar DataFrame para exportação
-        dados_exportacao = {
-            "Parâmetro": [
-                "Vazão de Recirculação (m³/h)",
-                "Volume Estático (m³)",
-                "Temperatura de Retorno (°C)",
-                "Temperatura de Bacia (°C)",
-                "% Arraste",
-                "% Utilização",
-                "Ciclos de Concentração (vezes)",
-                "Delta Temperatura (°C)",
-                "Evaporação (m³/h)",
-                "Perda Líquida (m³/h)",
-                "HTI (h)",
-                "Perda por Arraste (m³/h)",
-                "Purga do Sistema (m³/h)",
-                "Reposição (m³/h)"
-            ],
-            "Valor": [
-                formatar_numero(VZ_rec, 2),
-                formatar_numero(Vol_estatico, 2),
-                formatar_numero(T_retorno, 1),
-                formatar_numero(T_bacia, 1),
-                formatar_numero(perc_arraste, 4),
-                formatar_numero(perc_utilizacao, 1),
-                formatar_numero(ciclos, 2),
-                formatar_numero(delta_T, 2),
-                formatar_numero(evaporacao, 3),
-                formatar_numero(perda_liquida, 3),
-                formatar_numero(HTI, 2),
-                formatar_numero(perda_arraste, 3),
-                formatar_numero(purgas, 3),
-                formatar_numero(reposicao, 3)
-            ]
-        }
-        
-        export_df = pd.DataFrame(dados_exportacao)
-        csv = export_df.to_csv(index=False, sep=';', decimal=',')
-        
-        st.download_button(
-            label="📥 Exportar CSV",
-            data=csv,
-            file_name="resultados_torre_resfriamento.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    # Tela inicial quando ainda não calculou
+    # Tela inicial simples
     st.markdown("""
-    <div style="text-align: center; padding: 50px 20px;">
-        <h2 style="color: #1f77b4; margin-bottom: 30px;">🏭 Calculadora de Torre de Resfriamento</h2>
+    <div style="text-align: center; padding: 60px 20px;">
+        <h2 style="color: #1f77b4; margin-bottom: 40px;">🏭 Calculadora de Torre de Resfriamento</h2>
         
-        <div style="max-width: 700px; margin: 0 auto; background-color: #f8f9fa; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            <h3 style="color: #4CAF50; margin-bottom: 20px;">📋 Instruções de Uso</h3>
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h3 style="color: #4CAF50; margin-bottom: 30px;">📋 Como Usar</h3>
             
-            <div style="text-align: left; margin-bottom: 30px;">
-                <p style="margin: 15px 0; font-size: 16px;">1️⃣ <strong>Preencha todos os parâmetros</strong> na <strong style="color: #4CAF50;">barra lateral</strong></p>
-                <p style="margin: 15px 0; font-size: 16px;">2️⃣ Insira valores para os <strong>5 parâmetros químicos</strong> (Torre e Reposição)</p>
-                <p style="margin: 15px 0; font-size: 16px;">3️⃣ <strong>Selecione qual ciclo</strong> de concentração usar nos cálculos</p>
-                <p style="margin: 15px 0; font-size: 16px;">4️⃣ Clique no botão <strong style="color: #4CAF50;">🚀 CALCULAR</strong> para ver os resultados</p>
-            </div>
-            
-            <div style="background-color: #e8f5e9; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h4 style="color: #2e7d32; margin-bottom: 15px;">🔬 Parâmetros Disponíveis</h4>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
-                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Sílica (ppm)</span>
-                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Cloreto (ppm)</span>
-                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Dureza Total</span>
-                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Alcalinidade Total</span>
-                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Ferro Total</span>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 40px;">
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">1️⃣ Preencha os Parâmetros</h4>
+                    <p>Insira todos os dados na <strong>barra lateral</strong></p>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">2️⃣ Insira Valores Químicos</h4>
+                    <p>Digite os valores para os 5 parâmetros (Torre e Reposição)</p>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">3️⃣ Selecione o Ciclo</h4>
+                    <p>Escolha qual ciclo de concentração usar nos cálculos</p>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">4️⃣ Calcule</h4>
+                    <p>Clique em <strong>🚀 CALCULAR</strong> para ver os resultados</p>
                 </div>
             </div>
             
-            <p style="color: #666; font-style: italic; margin-top: 30px;">
-                ⏳ Os resultados serão exibidos aqui após o cálculo
+            <div style="background-color: #e8f5e9; padding: 25px; border-radius: 12px; margin: 30px 0;">
+                <h4 style="color: #2e7d32; margin-bottom: 20px;">🔬 Parâmetros Químicos</h4>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 15px;">
+                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Sílica</span>
+                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Cloreto</span>
+                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Dureza Total</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Alcalinidade Total</span>
+                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Ferro Total</span>
+                </div>
+            </div>
+            
+            <p style="color: #666; font-style: italic; margin-top: 40px; font-size: 18px;">
+                ⚡ <strong>Clique em CALCULAR na barra lateral para começar</strong>
             </p>
         </div>
     </div>
@@ -464,4 +424,4 @@ else:
 
 # Rodapé
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666;'>⚡ <strong>Calculadora desenvolvida para otimização de torres de resfriamento</strong> | 📧 Suporte técnico disponível</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #666; padding: 20px;'>📊 <strong>Calculadora de Torre de Resfriamento</strong> • Otimização de Sistemas</div>", unsafe_allow_html=True)
