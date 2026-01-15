@@ -6,29 +6,25 @@ st.set_page_config(page_title="Calculadora de Torre de Resfriamento", layout="wi
 def formatar_numero(valor, casas_decimais=3):
     """Formata número com vírgula como separador decimal e ponto como separador de milhar"""
     try:
-        if valor is None:
+        if valor is None or valor == 0:
             return "0,00"
         
         if pd.isna(valor):
             return "0,00"
             
-        # Formata com o número correto de casas decimais
         format_string = f"{{:.{casas_decimais}f}}"
         numero_formatado = format_string.format(float(valor))
         
-        # Separa parte inteira e decimal
         partes = numero_formatado.split('.')
         parte_inteira = partes[0]
         parte_decimal = partes[1] if len(partes) > 1 else ''
         
-        # Adiciona separador de milhar
         parte_inteira_com_pontos = ""
         for i, char in enumerate(reversed(parte_inteira)):
             if i > 0 and i % 3 == 0:
                 parte_inteira_com_pontos = '.' + parte_inteira_com_pontos
             parte_inteira_com_pontos = char + parte_inteira_com_pontos
         
-        # Retorna com vírgula como separador decimal
         if parte_decimal:
             return f"{parte_inteira_com_pontos},{parte_decimal}"
         else:
@@ -57,66 +53,11 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    .metric-card {
-        background-color: #ffffff;
-        padding: 25px;
-        border-radius: 12px;
-        margin: 15px;
-        border-left: 6px solid #4CAF50;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        text-align: center;
-        transition: transform 0.3s ease;
-        height: 100%;
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-    .metric-title {
-        margin: 0 0 15px 0;
-        color: #1f77b4;
-        font-size: 20px;
-        font-weight: 600;
-    }
-    .metric-value {
-        font-size: 32px;
-        font-weight: bold;
-        color: #2c3e50;
-        margin: 10px 0;
-        line-height: 1.2;
-    }
-    .metric-unit {
-        font-size: 18px;
-        color: #7f8c8d;
-        margin-top: 5px;
-    }
-    .result-title {
-        color: #1f77b4;
-        font-size: 28px;
-        font-weight: bold;
-        margin: 20px 0 30px 0;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #eee;
-        text-align: center;
-    }
     .sidebar-header {
         color: #4CAF50;
         font-weight: bold;
         margin-top: 20px;
         font-size: 16px;
-    }
-    .button-row {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-top: 40px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
     }
     .instruction-box {
         background-color: #f8f9fa;
@@ -153,6 +94,62 @@ st.markdown("""
         justify-content: center;
         margin: 20px 0;
     }
+    .flow-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .flow-step {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 15px 0;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        border-left: 5px solid #4CAF50;
+    }
+    .flow-title {
+        font-weight: bold;
+        color: #1f77b4;
+        margin-bottom: 10px;
+        font-size: 18px;
+    }
+    .flow-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+    .flow-unit {
+        color: #666;
+        font-size: 16px;
+    }
+    .flow-arrow {
+        text-align: center;
+        font-size: 30px;
+        color: #4CAF50;
+        margin: 10px 0;
+    }
+    .flow-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin: 20px 0;
+    }
+    .flow-grid-item {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+    }
+    .flow-diagram {
+        background-color: #f0f7ff;
+        padding: 30px;
+        border-radius: 15px;
+        margin: 30px 0;
+        border: 2px solid #cce7ff;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -168,7 +165,7 @@ with st.sidebar:
     st.header("⚙️ Parâmetros de Entrada")
     
     st.markdown('<div class="sidebar-header">Dados Básicos</div>', unsafe_allow_html=True)
-    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=None, step=50.0, format="%.2f", placeholder="Ex: 1000,00")
+    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=None, step=50.0, format="%.2f", placeholder="Ex: 1.000,00")
     Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=None, step=5.0, format="%.2f", placeholder="Ex: 50,00")
     T_retorno = st.number_input("Temperatura de Retorno (°C)", min_value=0.0, value=None, step=1.0, format="%.1f", placeholder="Ex: 40,0")
     T_bacia = st.number_input("Temperatura de Bacia (°C)", min_value=0.0, value=None, step=1.0, format="%.1f", placeholder="Ex: 30,0")
@@ -178,7 +175,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown('<div class="sidebar-header">Ciclos de Concentração</div>', unsafe_allow_html=True)
     
-    # Dicionário de parâmetros com valores padrão VAZIOS (None)
     parametros = {
         "Sílica": {"torre": None, "reposicao": None, "unidade": "ppm"},
         "Cloreto": {"torre": None, "reposicao": None, "unidade": "ppm"},
@@ -187,7 +183,6 @@ with st.sidebar:
         "Ferro Total": {"torre": None, "reposicao": None, "unidade": "ppm"}
     }
     
-    # Criar colunas para cada parâmetro
     ciclos_calculados = {}
     
     for param, dados in parametros.items():
@@ -206,7 +201,7 @@ with st.sidebar:
         with col2:
             repos_val = st.number_input(
                 f"{param} Reposição", 
-                min_value=0.0,  # Alterado de 0.01 para 0.0 para permitir 0
+                min_value=0.0,
                 value=dados["reposicao"],
                 step=5.0 if "ppm" in dados["unidade"] else 0.1,
                 key=f"repos_{param}",
@@ -224,7 +219,6 @@ with st.sidebar:
     st.markdown('<div class="sidebar-header">Selecionar Ciclo para Cálculos</div>', unsafe_allow_html=True)
     
     if ciclos_calculados:
-        # Criar opções para seleção
         opcoes = list(ciclos_calculados.keys())
         opcoes.insert(0, "Usar valor manual")
         
@@ -252,7 +246,7 @@ with st.sidebar:
 
 # Área principal para resultados
 if st.session_state.calcular:
-    st.markdown('<div class="result-title">📈 RESULTADOS DOS CÁLCULOS</div>', unsafe_allow_html=True)
+    st.markdown('<h2 style="text-align: center; color: #1f77b4; margin-bottom: 30px;">📈 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
     
     try:
         # Tratar valores None
@@ -267,13 +261,10 @@ if st.session_state.calcular:
         # Converter porcentagens para decimal
         perc_utilizacao_decimal = perc_utilizacao / 100.0
         
-        # 1. Delta Temperatura
+        # Cálculos
         delta_T = T_retorno - T_bacia
-        
-        # 2. Evaporação
         evaporacao = VZ_rec * delta_T * (0.85 / 556) * perc_utilizacao_decimal
         
-        # 3. Perda Líquida
         if ciclos > 1:
             perda_liquida = evaporacao / (ciclos - 1)
         else:
@@ -281,104 +272,120 @@ if st.session_state.calcular:
             if ciclos <= 1 and ciclos > 0:
                 st.error("⚠️ Ciclos de concentração devem ser maiores que 1!")
         
-        # 4. HTI (Índice de Tempo de Retenção)
         if perda_liquida > 0:
             HTI = 0.693 * (Vol_estatico / perda_liquida)
         else:
             HTI = 0.0
         
-        # 5. Perda por Arraste
         perda_arraste = (perc_arraste / 100.0) * VZ_rec * perc_utilizacao_decimal
-        
-        # 6. Purga do Sistema
         purgas = perda_liquida - perda_arraste
         if purgas < 0:
             purgas = 0.0
             st.warning("Perda por arraste maior que perda líquida - purga ajustada para zero")
         
-        # 7. Reposição
         reposicao = evaporacao + perda_liquida
         
-        # Layout com duas colunas
-        col1, col2 = st.columns(2)
+        # Diagrama do Fluxo da Torre
+        st.markdown('<div class="flow-diagram">', unsafe_allow_html=True)
         
+        # Seção 1: Entrada de Água Quente
+        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-title">📍 ENTRADA - ÁGUA QUENTE DO PROCESSO</div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns(3)
         with col1:
-            # Card 1: Delta Temperatura
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Delta Temperatura</div>
-                <div class="metric-value">{formatar_numero(delta_T, 2)}</div>
-                <div class="metric-unit">°C</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            # Card 2: Evaporação
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Evaporação</div>
-                <div class="metric-value">{formatar_numero(evaporacao, 3)}</div>
-                <div class="metric-unit">m³/h</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            # Card 3: Perda Líquida
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Perda Líquida</div>
-                <div class="metric-value">{formatar_numero(perda_liquida, 3)}</div>
-                <div class="metric-unit">m³/h</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            # Card 4: HTI
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">HTI</div>
-                <div class="metric-value">{formatar_numero(HTI, 2)}</div>
-                <div class="metric-unit">horas</div>
-            </div>
-            ''', unsafe_allow_html=True)
-        
+            st.markdown(f'<div class="flow-value">{formatar_numero(T_retorno, 1)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Temperatura de Retorno</div>', unsafe_allow_html=True)
         with col2:
-            # Card 5: Perda por Arraste
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Perda por Arraste</div>
-                <div class="metric-value">{formatar_numero(perda_arraste, 3)}</div>
-                <div class="metric-unit">m³/h</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            # Card 6: Purga do Sistema
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Purga do Sistema</div>
-                <div class="metric-value">{formatar_numero(purgas, 3)}</div>
-                <div class="metric-unit">m³/h</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            # Card 7: Reposição
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Reposição</div>
-                <div class="metric-value">{formatar_numero(reposicao, 3)}</div>
-                <div class="metric-unit">m³/h</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            # Card 8: Ciclos de Concentração
-            st.markdown(f'''
-            <div class="metric-card">
-                <div class="metric-title">Ciclos de Concentração</div>
-                <div class="metric-value">{formatar_numero(ciclos, 2)}</div>
-                <div class="metric-unit">vezes</div>
-            </div>
-            ''', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">{formatar_numero(VZ_rec, 2)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Vazão de Recirculação</div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown(f'<div class="flow-value">{formatar_numero(perc_utilizacao, 1)}%</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Utilização da Torre</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Seta para baixo
+        st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
+        
+        # Seção 2: Resfriamento na Torre
+        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-title">🏭 RESFRIAMENTO NA TORRE</div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(f'<div class="flow-value">{formatar_numero(delta_T, 2)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">ΔT (Redução de Temperatura)</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'<div class="flow-value">{formatar_numero(T_bacia, 1)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Temperatura da Bacia</div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown(f'<div class="flow-value">{formatar_numero(evaporacao, 3)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Evaporação</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Seta para baixo
+        st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
+        
+        # Seção 3: Perdas e Purga
+        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-title">💧 PERDAS E CONTROLE</div>', unsafe_allow_html=True)
+        
+        # Grid com as perdas
+        st.markdown('<div class="flow-grid">', unsafe_allow_html=True)
+        
+        # Perda Líquida Total
+        st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
+        st.markdown(f'<div class="flow-value">{formatar_numero(perda_liquida, 3)}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="flow-unit">Perda Líquida Total</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Perda por Arraste
+        st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
+        st.markdown(f'<div class="flow-value">{formatar_numero(perda_arraste, 3)}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="flow-unit">Perda por Arraste</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size: 12px; color: #666;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Purga do Sistema
+        st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
+        st.markdown(f'<div class="flow-value">{formatar_numero(purgas, 3)}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="flow-unit">Purga do Sistema</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-grid
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
+        
+        # Seta para baixo
+        st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
+        
+        # Seção 4: Reposição e Balanço
+        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-title">🔄 REPOSIÇÃO E BALANÇO HÍDRICO</div>', unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(f'<div class="flow-value">{formatar_numero(reposicao, 3)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Reposição Total</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'<div class="flow-value">{formatar_numero(ciclos, 2)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Ciclos de Concentração</div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown(f'<div class="flow-value">{formatar_numero(HTI, 2)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">HTI (Tempo Retenção)</div>', unsafe_allow_html=True)
+        
+        # Informações adicionais
+        st.markdown("---")
+        col4, col5 = st.columns(2)
+        with col4:
+            st.markdown(f'**Volume Estático:** {formatar_numero(Vol_estatico, 2)} m³')
+        with col5:
+            st.markdown(f'**Balanço:** Evaporação ({formatar_numero(evaporacao, 3)}) + Perda Líquida ({formatar_numero(perda_liquida, 3)}) = Reposição ({formatar_numero(reposicao, 3)}) m³/h')
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-diagram
         
         # Botões para ações
-        st.markdown('<div class="button-row">', unsafe_allow_html=True)
-        
+        st.markdown("---")
         col_b1, col_b2 = st.columns(2)
         
         with col_b1:
@@ -387,7 +394,6 @@ if st.session_state.calcular:
                 st.rerun()
         
         with col_b2:
-            # Criar DataFrame para exportação
             dados_exportacao = {
                 "Parâmetro": [
                     "Vazão de Recirculação (m³/h)",
@@ -427,20 +433,18 @@ if st.session_state.calcular:
             csv = export_df.to_csv(index=False, sep=';', decimal=',')
             
             st.download_button(
-                label="📥 Exportar CSV",
+                label="📥 Exportar Dados",
                 data=csv,
                 file_name="resultados_torre_resfriamento.csv",
                 mime="text/csv",
                 use_container_width=True
             )
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        
     except Exception as e:
         st.error(f"Erro nos cálculos: {str(e)}")
 
 else:
-    # Tela inicial SIMPLES
+    # Tela inicial
     st.markdown("## 📋 Instruções")
     
     st.markdown('<div class="instruction-box">', unsafe_allow_html=True)
@@ -450,16 +454,14 @@ else:
     1. **Preencha todos os parâmetros** na barra lateral
     2. **Insira valores** para os 5 parâmetros químicos (Torre e Reposição)
     3. **Selecione qual ciclo** de concentração usar nos cálculos
-    4. **Clique em 🚀 CALCULAR** para ver os resultados
+    4. **Clique em 🚀 CALCULAR** para ver o fluxo da torre
     """)
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("### 🔬 Parâmetros Químicos Disponíveis")
     
-    # Container centralizado
     st.markdown('<div class="center-container">', unsafe_allow_html=True)
     
-    # Criar uma linha com os 5 parâmetros centralizados
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
@@ -505,8 +507,8 @@ else:
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
-    st.info("⚡ **Clique no botão CALCULAR na barra lateral para começar**")
+    st.info("⚡ **Clique no botão CALCULAR na barra lateral para visualizar o fluxo da torre**")
 
 # Rodapé
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666; padding: 20px;'>📊 Calculadora de Torre de Resfriamento • Versão 1.0</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #666; padding: 20px;'>📊 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
