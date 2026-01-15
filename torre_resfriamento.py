@@ -42,43 +42,81 @@ st.markdown("""
     }
     .metric-card {
         background-color: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 10px 0;
-        border-left: 5px solid #4CAF50;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 25px;
+        border-radius: 12px;
+        margin: 15px 0;
+        border-left: 6px solid #4CAF50;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
     }
-    .metric-card h4 {
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    .metric-title {
         margin: 0 0 10px 0;
         color: #1f77b4;
-        font-size: 18px;
+        font-size: 20px;
+        font-weight: 600;
     }
     .metric-value {
-        font-size: 24px;
+        font-size: 32px;
         font-weight: bold;
-        color: #333;
+        color: #2c3e50;
+        margin: 10px 0;
     }
     .metric-unit {
-        font-size: 16px;
-        color: #666;
+        font-size: 18px;
+        color: #7f8c8d;
+        margin-top: 5px;
     }
     .result-title {
         color: #1f77b4;
-        font-size: 22px;
+        font-size: 28px;
         font-weight: bold;
-        margin: 20px 0 15px 0;
+        margin: 20px 0;
         padding-bottom: 10px;
-        border-bottom: 2px solid #eee;
+        border-bottom: 3px solid #eee;
+        text-align: center;
     }
     .sidebar-header {
         color: #4CAF50;
         font-weight: bold;
         margin-top: 20px;
+        font-size: 16px;
+    }
+    .results-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        width: 100%;
+        margin-top: 20px;
+    }
+    @media (max-width: 768px) {
+        .results-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .consistency-check {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 30px;
+        text-align: center;
+        border: 1px solid #e9ecef;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🗼 Calculadora de Torre de Resfriamento")
+st.title("📊 Calculadora de Torre de Resfriamento")
 st.markdown("---")
 
 # Inicializar estado da sessão
@@ -87,7 +125,7 @@ if 'calcular' not in st.session_state:
 
 # Sidebar para parâmetros de entrada
 with st.sidebar:
-    st.header("💧 Parâmetros de Entrada")
+    st.header("⚙️ Parâmetros de Entrada")
     
     st.markdown('<div class="sidebar-header">Dados Básicos</div>', unsafe_allow_html=True)
     VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=1000.0, step=50.0, format="%.2f")
@@ -174,7 +212,7 @@ with st.sidebar:
 
 # Área principal para resultados
 if st.session_state.calcular:
-    st.header("📈 Resultados dos Cálculos")
+    st.markdown('<div class="result-title">📈 RESULTADOS DOS CÁLCULOS</div>', unsafe_allow_html=True)
     
     try:
         # Converter porcentagens para decimal
@@ -211,122 +249,110 @@ if st.session_state.calcular:
         # 7. Reposição
         reposicao = evaporacao + perda_liquida
         
-        # Exibir resultados em colunas
-        col1, col2 = st.columns(2)
+        # Container centralizado para resultados
+        st.markdown('<div class="results-container">', unsafe_allow_html=True)
         
-        with col1:
-            st.markdown('<div class="result-title">Resultados Principais</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Delta Temperatura</h4>'
-                        f'<div class="metric-value">{formatar_numero(delta_T, 2)}</div>'
-                        f'<div class="metric-unit">°C</div>'
-                        f'</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Evaporação</h4>'
-                        f'<div class="metric-value">{formatar_numero(evaporacao, 3)}</div>'
-                        f'<div class="metric-unit">m³/h</div>'
-                        f'</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>HTI (Tempo de Retenção)</h4>'
-                        f'<div class="metric-value">{formatar_numero(HTI, 2)}</div>'
-                        f'<div class="metric-unit">horas</div>'
-                        f'</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Reposição</h4>'
-                        f'<div class="metric-value">{formatar_numero(reposicao, 3)}</div>'
-                        f'<div class="metric-unit">m³/h</div>'
-                        f'</div>', unsafe_allow_html=True)
+        # Grade de resultados
+        st.markdown('<div class="results-grid">', unsafe_allow_html=True)
         
-        with col2:
-            st.markdown('<div class="result-title">Perdas e Purga</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Perda Líquida</h4>'
-                        f'<div class="metric-value">{formatar_numero(perda_liquida, 3)}</div>'
-                        f'<div class="metric-unit">m³/h</div>'
-                        f'</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Perda por Arraste</h4>'
-                        f'<div class="metric-value">{formatar_numero(perda_arraste, 3)}</div>'
-                        f'<div class="metric-unit">m³/h</div>'
-                        f'</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Purga do Sistema</h4>'
-                        f'<div class="metric-value">{formatar_numero(purgas, 3)}</div>'
-                        f'<div class="metric-unit">m³/h</div>'
-                        f'</div>', unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="metric-card">'
-                        f'<h4>Ciclos de Concentração</h4>'
-                        f'<div class="metric-value">{formatar_numero(ciclos, 2)}</div>'
-                        f'<div class="metric-unit">vezes</div>'
-                        f'</div>', unsafe_allow_html=True)
+        # Card 1: Delta Temperatura
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Delta Temperatura</div>
+            <div class="metric-value">{formatar_numero(delta_T, 2)}</div>
+            <div class="metric-unit">°C</div>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        # Tabela resumo
+        # Card 2: Evaporação
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Evaporação</div>
+            <div class="metric-value">{formatar_numero(evaporacao, 3)}</div>
+            <div class="metric-unit">m³/h</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Card 3: Perda Líquida
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Perda Líquida</div>
+            <div class="metric-value">{formatar_numero(perda_liquida, 3)}</div>
+            <div class="metric-unit">m³/h</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Card 4: HTI
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">HTI</div>
+            <div class="metric-value">{formatar_numero(HTI, 2)}</div>
+            <div class="metric-unit">horas</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Card 5: Perda por Arraste
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Perda por Arraste</div>
+            <div class="metric-value">{formatar_numero(perda_arraste, 3)}</div>
+            <div class="metric-unit">m³/h</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Card 6: Purga do Sistema
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Purga do Sistema</div>
+            <div class="metric-value">{formatar_numero(purgas, 3)}</div>
+            <div class="metric-unit">m³/h</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Card 7: Reposição
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Reposição</div>
+            <div class="metric-value">{formatar_numero(reposicao, 3)}</div>
+            <div class="metric-unit">m³/h</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Card 8: Ciclos de Concentração
+        st.markdown(f'''
+        <div class="metric-card">
+            <div class="metric-title">Ciclos de Concentração</div>
+            <div class="metric-value">{formatar_numero(ciclos, 2)}</div>
+            <div class="metric-unit">vezes</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha results-grid
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha results-container
+        
+        # Verificações de consistência (mais discreto)
         st.markdown("---")
-        st.subheader("📋 Resumo dos Resultados")
-        
-        resumo_df = pd.DataFrame({
-            "Parâmetro": [
-                "Delta Temperatura",
-                "Evaporação",
-                "Perda Líquida",
-                "HTI",
-                "Perda por Arraste",
-                "Purga do Sistema",
-                "Reposição",
-                "Ciclos de Concentração"
-            ],
-            "Valor": [
-                f"{formatar_numero(delta_T, 2)} °C",
-                f"{formatar_numero(evaporacao, 3)} m³/h",
-                f"{formatar_numero(perda_liquida, 3)} m³/h",
-                f"{formatar_numero(HTI, 2)} h",
-                f"{formatar_numero(perda_arraste, 3)} m³/h",
-                f"{formatar_numero(purgas, 3)} m³/h",
-                f"{formatar_numero(reposicao, 3)} m³/h",
-                f"{formatar_numero(ciclos, 2)} vezes"
-            ],
-            "Descrição": [
-                "Diferença entre temperatura de retorno e bacia",
-                "Vazão evaporada na torre",
-                "Água perdida total",
-                "Índice de Tempo de Retenção",
-                "Água perdida por arraste",
-                "Água descartada para controle",
-                "Vazão de água reposta",
-                "Ciclos de concentração selecionados"
-            ]
-        })
-        
-        st.dataframe(resumo_df, use_container_width=True, hide_index=True)
-        
-        # Verificações de consistência
-        st.markdown("---")
-        st.subheader("✅ Verificação de Consistência")
+        st.markdown('<div class="consistency-check">', unsafe_allow_html=True)
+        st.markdown("### ✅ Verificação de Consistência")
         
         col_v1, col_v2 = st.columns(2)
         
         with col_v1:
             st.markdown(f"**Evaporação + Perda Líquida = Reposição**")
-            st.markdown(f"{formatar_numero(evaporacao, 3)} + {formatar_numero(perda_liquida, 3)} = {formatar_numero(reposicao, 3)} m³/h")
+            st.markdown(f"`{formatar_numero(evaporacao, 3)} + {formatar_numero(perda_liquida, 3)} = {formatar_numero(reposicao, 3)} m³/h`")
             
         with col_v2:
             st.markdown(f"**Perda Líquida = Purga + Arraste**")
-            st.markdown(f"{formatar_numero(perda_liquida, 3)} = {formatar_numero(purgas, 3)} + {formatar_numero(perda_arraste, 3)} m³/h")
+            st.markdown(f"`{formatar_numero(perda_liquida, 3)} = {formatar_numero(purgas, 3)} + {formatar_numero(perda_arraste, 3)} m³/h`")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"Erro nos cálculos: {str(e)}")
     
-    # Botões para novo cálculo
+    # Botões para ações
     st.markdown("---")
-    col_b1, col_b2 = st.columns(2)
+    col_b1, col_b2, col_b3 = st.columns(3)
     
     with col_b1:
         if st.button("🔄 Novo Cálculo", use_container_width=True):
@@ -334,91 +360,98 @@ if st.session_state.calcular:
             st.rerun()
     
     with col_b2:
-        if st.button("📥 Exportar Resultados", use_container_width=True):
-            # Criar DataFrame para exportação
-            dados_exportacao = {
-                "Parâmetro": [
-                    "Vazão de Recirculação (m³/h)",
-                    "Volume Estático (m³)",
-                    "Temperatura de Retorno (°C)",
-                    "Temperatura de Bacia (°C)",
-                    "% Arraste",
-                    "% Utilização",
-                    "Ciclos de Concentração (vezes)",
-                    "Delta Temperatura (°C)",
-                    "Evaporação (m³/h)",
-                    "Perda Líquida (m³/h)",
-                    "HTI (h)",
-                    "Perda por Arraste (m³/h)",
-                    "Purga do Sistema (m³/h)",
-                    "Reposição (m³/h)"
-                ],
-                "Valor": [
-                    formatar_numero(VZ_rec, 2),
-                    formatar_numero(Vol_estatico, 2),
-                    formatar_numero(T_retorno, 1),
-                    formatar_numero(T_bacia, 1),
-                    formatar_numero(perc_arraste, 4),
-                    formatar_numero(perc_utilizacao, 1),
-                    formatar_numero(ciclos, 2),
-                    formatar_numero(delta_T, 2),
-                    formatar_numero(evaporacao, 3),
-                    formatar_numero(perda_liquida, 3),
-                    formatar_numero(HTI, 2),
-                    formatar_numero(perda_arraste, 3),
-                    formatar_numero(purgas, 3),
-                    formatar_numero(reposicao, 3)
-                ]
-            }
-            
-            export_df = pd.DataFrame(dados_exportacao)
-            
-            # Converter para CSV
-            csv = export_df.to_csv(index=False, sep=';', decimal=',')
-            st.download_button(
-                label="📄 Baixar CSV",
-                data=csv,
-                file_name="resultados_torre_resfriamento.csv",
-                mime="text/csv"
-            )
+        if st.button("📋 Ver Dados de Entrada", use_container_width=True):
+            with st.expander("📊 Dados de Entrada Utilizados", expanded=True):
+                st.write(f"**Vazão de Recirculação:** {formatar_numero(VZ_rec, 2)} m³/h")
+                st.write(f"**Volume Estático:** {formatar_numero(Vol_estatico, 2)} m³")
+                st.write(f"**Temperatura de Retorno:** {formatar_numero(T_retorno, 1)} °C")
+                st.write(f"**Temperatura de Bacia:** {formatar_numero(T_bacia, 1)} °C")
+                st.write(f"**% Arraste:** {formatar_numero(perc_arraste, 4)} %")
+                st.write(f"**% Utilização:** {formatar_numero(perc_utilizacao, 1)} %")
+                st.write(f"**Ciclos Selecionados:** {formatar_numero(ciclos, 2)} vezes")
+    
+    with col_b3:
+        # Criar DataFrame para exportação
+        dados_exportacao = {
+            "Parâmetro": [
+                "Vazão de Recirculação (m³/h)",
+                "Volume Estático (m³)",
+                "Temperatura de Retorno (°C)",
+                "Temperatura de Bacia (°C)",
+                "% Arraste",
+                "% Utilização",
+                "Ciclos de Concentração (vezes)",
+                "Delta Temperatura (°C)",
+                "Evaporação (m³/h)",
+                "Perda Líquida (m³/h)",
+                "HTI (h)",
+                "Perda por Arraste (m³/h)",
+                "Purga do Sistema (m³/h)",
+                "Reposição (m³/h)"
+            ],
+            "Valor": [
+                formatar_numero(VZ_rec, 2),
+                formatar_numero(Vol_estatico, 2),
+                formatar_numero(T_retorno, 1),
+                formatar_numero(T_bacia, 1),
+                formatar_numero(perc_arraste, 4),
+                formatar_numero(perc_utilizacao, 1),
+                formatar_numero(ciclos, 2),
+                formatar_numero(delta_T, 2),
+                formatar_numero(evaporacao, 3),
+                formatar_numero(perda_liquida, 3),
+                formatar_numero(HTI, 2),
+                formatar_numero(perda_arraste, 3),
+                formatar_numero(purgas, 3),
+                formatar_numero(reposicao, 3)
+            ]
+        }
+        
+        export_df = pd.DataFrame(dados_exportacao)
+        csv = export_df.to_csv(index=False, sep=';', decimal=',')
+        
+        st.download_button(
+            label="📥 Exportar CSV",
+            data=csv,
+            file_name="resultados_torre_resfriamento.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
 else:
     # Tela inicial quando ainda não calculou
     st.markdown("""
-    ## 🏭 Bem-vindo à Calculadora de Torre de Resfriamento
-    
-    ### 📋 Instruções:
-    1. **Preencha todos os parâmetros** na **barra lateral** ←
-    2. Insira valores para os **5 parâmetros químicos** (Torre e Reposição)
-    3. **Selecione qual ciclo** de concentração usar nos cálculos
-    4. Clique no botão **🚀 CALCULAR** para ver os resultados
-    
-    ### 🔬 Parâmetros disponíveis para cálculo de ciclos:
-    - **Sílica** (ppm)
-    - **Cloreto** (ppm)
-    - **Dureza Total** (ppm CaCO₃)
-    - **Alcalinidade Total** (ppm CaCO₃)
-    - **Ferro Total** (ppm)
-    
-    ---
-    
-    *Os resultados serão exibidos aqui após o cálculo.*
-    """)
-    
-    # Exemplo de layout vazio
-    with st.expander("ℹ️ Sobre os cálculos"):
-        st.markdown("""
-        Esta calculadora realiza os seguintes cálculos:
+    <div style="text-align: center; padding: 50px 20px;">
+        <h2 style="color: #1f77b4; margin-bottom: 30px;">🏭 Calculadora de Torre de Resfriamento</h2>
         
-        1. **Delta Temperatura** - Diferença entre retorno e bacia
-        2. **Evaporação** - Baseada na vazão, delta T e utilização
-        3. **Perda Líquida** - Relacionada aos ciclos de concentração
-        4. **HTI** - Índice de Tempo de Retenção
-        5. **Perda por Arraste** - Baseada no percentual de arraste
-        6. **Purga do Sistema** - Perda líquida menos arraste
-        7. **Reposição** - Evaporação mais perda líquida
-        """)
+        <div style="max-width: 700px; margin: 0 auto; background-color: #f8f9fa; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #4CAF50; margin-bottom: 20px;">📋 Instruções de Uso</h3>
+            
+            <div style="text-align: left; margin-bottom: 30px;">
+                <p style="margin: 15px 0; font-size: 16px;">1️⃣ <strong>Preencha todos os parâmetros</strong> na <strong style="color: #4CAF50;">barra lateral</strong></p>
+                <p style="margin: 15px 0; font-size: 16px;">2️⃣ Insira valores para os <strong>5 parâmetros químicos</strong> (Torre e Reposição)</p>
+                <p style="margin: 15px 0; font-size: 16px;">3️⃣ <strong>Selecione qual ciclo</strong> de concentração usar nos cálculos</p>
+                <p style="margin: 15px 0; font-size: 16px;">4️⃣ Clique no botão <strong style="color: #4CAF50;">🚀 CALCULAR</strong> para ver os resultados</p>
+            </div>
+            
+            <div style="background-color: #e8f5e9; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #2e7d32; margin-bottom: 15px;">🔬 Parâmetros Disponíveis</h4>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Sílica (ppm)</span>
+                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Cloreto (ppm)</span>
+                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Dureza Total</span>
+                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Alcalinidade Total</span>
+                    <span style="background-color: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Ferro Total</span>
+                </div>
+            </div>
+            
+            <p style="color: #666; font-style: italic; margin-top: 30px;">
+                ⏳ Os resultados serão exibidos aqui após o cálculo
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Rodapé
 st.markdown("---")
-st.markdown("⚡ *Calculadora desenvolvida para otimização de torres de resfriamento* | 📧 Suporte técnico disponível")
+st.markdown("<div style='text-align: center; color: #666;'>⚡ <strong>Calculadora desenvolvida para otimização de torres de resfriamento</strong> | 📧 Suporte técnico disponível</div>", unsafe_allow_html=True)
