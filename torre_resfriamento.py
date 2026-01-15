@@ -25,7 +25,7 @@ st.markdown("""
         width: 100%;
         background-color: #4CAF50;
         color: white;
-        font-size: 30px;
+        font-size: 18px;
         font-weight: bold;
         padding: 12px;
         border-radius: 8px;
@@ -64,14 +64,14 @@ st.markdown("""
         font-weight: 600;
     }
     .metric-value {
-        font-size: 40px;
+        font-size: 32px;
         font-weight: bold;
         color: #2c3e50;
         margin: 10px 0;
         line-height: 1.2;
     }
     .metric-unit {
-        font-size: 32px;
+        font-size: 18px;
         color: #7f8c8d;
         margin-top: 5px;
     }
@@ -98,6 +98,13 @@ st.markdown("""
         max-width: 600px;
         margin-left: auto;
         margin-right: auto;
+    }
+    .instruction-box {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 5px solid #4CAF50;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -372,56 +379,41 @@ if st.session_state.calcular:
         st.error(f"Erro nos cálculos: {str(e)}")
 
 else:
-    # Tela inicial simples
+    # Tela inicial SIMPLES
+    st.markdown("## 📋 Instruções")
+    
+    st.markdown('<div class="instruction-box">', unsafe_allow_html=True)
     st.markdown("""
-    <div style="text-align: center; padding: 60px 20px;">
-        <h2 style="color: #1f77b4; margin-bottom: 40px;">🏭 Calculadora de Torre de Resfriamento</h2>
-        
-        <div style="max-width: 800px; margin: 0 auto;">
-            <h3 style="color: #4CAF50; margin-bottom: 30px;">📋 Como Usar</h3>
-            
-            <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 40px;">
-                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
-                    <h4 style="color: #4CAF50; margin-bottom: 10px;">1️⃣ Preencha os Parâmetros</h4>
-                    <p>Insira todos os dados na <strong>barra lateral</strong></p>
-                </div>
-                
-                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
-                    <h4 style="color: #4CAF50; margin-bottom: 10px;">2️⃣ Insira Valores Químicos</h4>
-                    <p>Digite os valores para os 5 parâmetros (Torre e Reposição)</p>
-                </div>
-                
-                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
-                    <h4 style="color: #4CAF50; margin-bottom: 10px;">3️⃣ Selecione o Ciclo</h4>
-                    <p>Escolha qual ciclo de concentração usar nos cálculos</p>
-                </div>
-                
-                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: left;">
-                    <h4 style="color: #4CAF50; margin-bottom: 10px;">4️⃣ Calcule</h4>
-                    <p>Clique em <strong>🚀 CALCULAR</strong> para ver os resultados</p>
-                </div>
-            </div>
-            
-            <div style="background-color: #e8f5e9; padding: 25px; border-radius: 12px; margin: 30px 0;">
-                <h4 style="color: #2e7d32; margin-bottom: 20px;">🔬 Parâmetros Químicos</h4>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 15px;">
-                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Sílica</span>
-                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Cloreto</span>
-                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Dureza Total</span>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
-                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Alcalinidade Total</span>
-                    <span style="background-color: white; padding: 10px 20px; border-radius: 25px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 500;">Ferro Total</span>
-                </div>
-            </div>
-            
-            <p style="color: #666; font-style: italic; margin-top: 40px; font-size: 18px;">
-                ⚡ <strong>Clique em CALCULAR na barra lateral para começar</strong>
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    **Para usar a calculadora:**
+    
+    1. **Preencha todos os parâmetros** na barra lateral
+    2. **Insira valores** para os 5 parâmetros químicos (Torre e Reposição)
+    3. **Selecione qual ciclo** de concentração usar nos cálculos
+    4. **Clique em 🚀 CALCULAR** para ver os resultados
+    """)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown("### 🔬 Parâmetros Químicos Disponíveis")
+    col1, col2, col3, col4, col5 = st.columns(5)
+    
+    with col1:
+        st.info("**Sílica**\n\nppm")
+    
+    with col2:
+        st.info("**Cloreto**\n\nppm")
+    
+    with col3:
+        st.info("**Dureza Total**\n\nppm CaCO₃")
+    
+    with col4:
+        st.info("**Alcalinidade Total**\n\nppm CaCO₃")
+    
+    with col5:
+        st.info("**Ferro Total**\n\nppm")
+    
+    st.markdown("---")
+    st.info("⚡ **Clique no botão CALCULAR na barra lateral para começar**")
 
 # Rodapé
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666; padding: 20px;'>📊 <strong>Calculadora de Torre de Resfriamento</strong> • Otimização de Sistemas</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #666; padding: 20px;'>📊 Calculadora de Torre de Resfriamento • Versão 1.0</div>", unsafe_allow_html=True)
