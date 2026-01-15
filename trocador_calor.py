@@ -189,101 +189,147 @@ if calc_type == "Análise Completa":
                      delta_color="inverse" if balance_error > 5 else "normal")
         
         # Gráfico de temperaturas
-        # Gráfico SIMPLES e CLARO
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+        # Gráfico de temperaturas - VERSÃO MELHORADA
+        fig, ax = plt.subplots(figsize=(10, 6))
         
-        # SUBGRÁFICO 1: Diagrama esquemático
-        ax1.set_title(f'Diagrama do Trocador - {flow_type}', fontsize=12, fontweight='bold')
-        
-        # Desenhar o trocador (simplificado)
+        # Determinar temperaturas baseado no tipo de escoamento
         if flow_type == "Contracorrente":
-            # Contracorrente
-            ax1.plot([0, 1], [0.7, 0.7], 'r-', linewidth=4, label='Lado Quente →')
-            ax1.plot([0, 1], [0.3, 0.3], 'b-', linewidth=4, label='← Lado Frio')
-            ax1.text(0.05, 0.75, f'ENT: {T1_in:.0f}°C', fontsize=10, color='red', fontweight='bold')
-            ax1.text(0.85, 0.75, f'SAÍ: {T1_out:.0f}°C', fontsize=10, color='red', fontweight='bold')
-            ax1.text(0.05, 0.25, f'SAÍ: {T2_out:.0f}°C', fontsize=10, color='blue', fontweight='bold')
-            ax1.text(0.85, 0.25, f'ENT: {T2_in:.0f}°C', fontsize=10, color='blue', fontweight='bold')
+            # Contracorrente: fluidos em sentidos opostos
+            positions = ['Entrada', 'Saída']
+            
+            # Lado quente: entrada -> saída
+            hot_positions = [0, 1]
+            hot_temps = [T1_in, T1_out]
+            hot_labels = [f'{T1_in:.1f}°C', f'{T1_out:.1f}°C']
+            
+            # Lado frio: saída -> entrada (sentido oposto)
+            cold_positions = [1, 0]  # Invertido!
+            cold_temps = [T2_in, T2_out]  # Mas temperaturas na ordem normal
+            cold_labels = [f'{T2_out:.1f}°C', f'{T2_in:.1f}°C']  # Labels invertidos
+            
+            title_suffix = ' (Contracorrente)'
         else:
-            # Paralelo
-            ax1.plot([0, 1], [0.7, 0.7], 'r-', linewidth=4, label='Lado Quente →')
-            ax1.plot([0, 1], [0.3, 0.3], 'b-', linewidth=4, label='Lado Frio →')
-            ax1.text(0.05, 0.75, f'ENT: {T1_in:.0f}°C', fontsize=10, color='red', fontweight='bold')
-            ax1.text(0.85, 0.75, f'SAÍ: {T1_out:.0f}°C', fontsize=10, color='red', fontweight='bold')
-            ax1.text(0.05, 0.25, f'ENT: {T2_in:.0f}°C', fontsize=10, color='blue', fontweight='bold')
-            ax1.text(0.85, 0.25, f'SAÍ: {T2_out:.0f}°C', fontsize=10, color='blue', fontweight='bold')
+            # Paralelo: fluidos no mesmo sentido
+            positions = ['Entrada', 'Saída']
+            
+            # Ambos no mesmo sentido
+            hot_positions = [0, 1]
+            hot_temps = [T1_in, T1_out]
+            hot_labels = [f'{T1_in:.1f}°C', f'{T1_out:.1f}°C']
+            
+            cold_positions = [0, 1]
+            cold_temps = [T2_in, T2_out]
+            cold_labels = [f'{T2_in:.1f}°C', f'{T2_out:.1f}°C']
+            
+            title_suffix = ' (Paralelo)'
         
-        ax1.set_xlim(-0.1, 1.1)
-        ax1.set_ylim(0, 1)
-        ax1.set_xlabel('Comprimento do Trocador', fontsize=10)
-        ax1.set_yticks([])
-        ax1.legend(loc='upper center', fontsize=10)
-        ax1.grid(True, alpha=0.2)
+        # Plotar linhas com marcadores maiores
+        line_hot = ax.plot(hot_positions, hot_temps, 'r-o', 
+                           linewidth=3, 
+                           markersize=10, 
+                           markerfacecolor='white',
+                           markeredgewidth=2,
+                           label='Lado Quente')
         
-        # Caixa de informações
-        info_text = f'''PARÂMETROS:
-        Q = {Q_avg/1000:.1f} kW
-        LMTD = {LMTD:.1f}°C
-        U = {U_operational:.0f} W/m²K
-        ΔT₁ = {abs(T1_in - (T2_out if flow_type=="Contracorrente" else T2_in)):.1f}°C
-        ΔT₂ = {abs(T1_out - T2_in):.1f}°C'''
-        ax1.text(0.02, 0.02, info_text,
-                 transform=ax1.transAxes,
-                 fontsize=9,
-                 verticalalignment='bottom',
-                 bbox=dict(boxstyle="round,pad=0.3", 
-                          facecolor='lightblue', 
-                          alpha=0.8))
+        line_cold = ax.plot(cold_positions, cold_temps, 'b-s', 
+                            linewidth=3, 
+                            markersize=10, 
+                            markerfacecolor='white',
+                            markeredgewidth=2,
+                            label='Lado Frio')
         
-        # SUBGRÁFICO 2: Perfil de temperaturas
-        positions = [0, 1]  # 0 = Entrada, 1 = Saída
+        # Adicionar rótulos de dados em cada ponto
+        for i, (x, y, label) in enumerate(zip(hot_positions, hot_temps, hot_labels)):
+            # Posicionar label acima do ponto para quente, abaixo para frio
+            va = 'bottom' if y > cold_temps[i] else 'top'
+            offset = 1 if va == 'bottom' else -1
+            ax.annotate(label, 
+                        xy=(x, y), 
+                        xytext=(0, offset*3),
+                        textcoords='offset points',
+                        ha='center',
+                        va=va,
+                        fontsize=10,
+                        fontweight='bold',
+                        bbox=dict(boxstyle="round,pad=0.3", 
+                                 facecolor='white', 
+                                 alpha=0.8,
+                                 edgecolor='red'))
         
+        for i, (x, y, label) in enumerate(zip(cold_positions, cold_temps, cold_labels)):
+            # Posicionar label oposto ao lado quente
+            va = 'top' if y < hot_temps[i] else 'bottom'
+            offset = -1 if va == 'top' else 1
+            ax.annotate(label, 
+                        xy=(x, y), 
+                        xytext=(0, offset*3),
+                        textcoords='offset points',
+                        ha='center',
+                        va=va,
+                        fontsize=10,
+                        fontweight='bold',
+                        bbox=dict(boxstyle="round,pad=0.3", 
+                                 facecolor='white', 
+                                 alpha=0.8,
+                                 edgecolor='blue'))
+        
+        # Área entre as curvas (diferença de temperatura)
+        x_fill = np.array([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+        # Interpolar temperaturas para preenchimento suave
+        hot_fill = np.interp(x_fill, hot_positions, hot_temps)
+        cold_fill = np.interp(x_fill, cold_positions, cold_temps)
+        ax.fill_between(x_fill, hot_fill, cold_fill, 
+                        alpha=0.15, color='gray',
+                        label='Diferença de Temperatura')
+        
+        # Configurar eixos
+        ax.set_xlabel('Posição no Trocador', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Temperatura (°C)', fontsize=12, fontweight='bold')
+        ax.set_title(f'Perfil de Temperaturas{title_suffix}', 
+                     fontsize=14, fontweight='bold', pad=20)
+        
+        # Definir ticks do eixo X
+        ax.set_xticks([0, 1])
+        ax.set_xticklabels(['ENTRADA', 'SAÍDA'], fontsize=11, fontweight='bold')
+        
+        # Grid e limites
+        ax.grid(True, alpha=0.3, linestyle='--')
+        ax.set_xlim(-0.1, 1.1)
+        ymin = min(min(hot_temps), min(cold_temps)) - 5
+        ymax = max(max(hot_temps), max(cold_temps)) + 5
+        ax.set_ylim(ymin, ymax)
+        
+        # Adicionar setas indicando direção do fluxo
+        arrow_props = dict(arrowstyle='->', lw=2, color='black')
+        
+        # Seta para lado quente
+        ax.annotate('', xy=(0.7, hot_temps[0]), xytext=(0.3, hot_temps[0]),
+                    arrowprops=dict(arrowstyle='->', lw=2, color='red', alpha=0.7))
+        
+        # Seta para lado frio (direção depende do tipo)
         if flow_type == "Contracorrente":
-            hot_line = ax2.plot(positions, [T1_in, T1_out], 'r-o', 
-                               linewidth=3, markersize=12, 
-                               label=f'Quente: {T1_in:.0f}→{T1_out:.0f}°C',
-                               markerfacecolor='white')
-            cold_line = ax2.plot(positions, [T2_out, T2_in], 'b-s', 
-                                linewidth=3, markersize=12,
-                                label=f'Frio: {T2_out:.0f}→{T2_in:.0f}°C',
-                                markerfacecolor='white')
+            # Sentido oposto
+            ax.annotate('', xy=(0.3, cold_temps[1]), xytext=(0.7, cold_temps[1]),
+                        arrowprops=dict(arrowstyle='->', lw=2, color='blue', alpha=0.7))
         else:
-            hot_line = ax2.plot(positions, [T1_in, T1_out], 'r-o', 
-                               linewidth=3, markersize=12,
-                               label=f'Quente: {T1_in:.0f}→{T1_out:.0f}°C',
-                               markerfacecolor='white')
-            cold_line = ax2.plot(positions, [T2_in, T2_out], 'b-s', 
-                                linewidth=3, markersize=12,
-                                label=f'Frio: {T2_in:.0f}→{T2_out:.0f}°C',
-                                markerfacecolor='white')
+            # Mesmo sentido
+            ax.annotate('', xy=(0.7, cold_temps[0]), xytext=(0.3, cold_temps[0]),
+                        arrowprops=dict(arrowstyle='->', lw=2, color='blue', alpha=0.7))
         
-        # Adicionar valores nos pontos
-        for x, y in zip(positions, [T1_in, T1_out]):
-            ax2.annotate(f'{y:.1f}°C', xy=(x, y), 
-                        xytext=(0, 10), textcoords='offset points',
-                        ha='center', fontsize=9, fontweight='bold',
-                        color='red')
+        # Legendas
+        ax.legend(loc='best', fontsize=10, framealpha=0.9)
         
-        for i, x in enumerate(positions):
-            y = [T2_out, T2_in][i] if flow_type=="Contracorrente" else [T2_in, T2_out][i]
-            ax2.annotate(f'{y:.1f}°C', xy=(x, y), 
-                        xytext=(0, -15), textcoords='offset points',
-                        ha='center', fontsize=9, fontweight='bold',
-                        color='blue')
+        # Adicionar texto informativo
+        info_text = f'LMTD = {LMTD:.1f}°C\nΔT₁ = {abs(hot_temps[0]-cold_temps[0]):.1f}°C\nΔT₂ = {abs(hot_temps[1]-cold_temps[1]):.1f}°C'
+        ax.text(0.02, 0.98, info_text,
+                transform=ax.transAxes,
+                fontsize=9,
+                verticalalignment='top',
+                bbox=dict(boxstyle="round,pad=0.3", 
+                         facecolor='lightyellow', 
+                         alpha=0.8,
+                         edgecolor='orange'))
         
-        ax2.set_xlabel('Posição no Trocador', fontsize=11, fontweight='bold')
-        ax2.set_ylabel('Temperatura (°C)', fontsize=11, fontweight='bold')
-        ax2.set_title('Perfil de Temperaturas', fontsize=12, fontweight='bold')
-        ax2.set_xticks([0, 1])
-        ax2.set_xticklabels(['ENTRADA', 'SAÍDA'], fontsize=11, fontweight='bold')
-        ax2.grid(True, alpha=0.3, linestyle='--')
-        ax2.legend(loc='best', fontsize=10)
-        
-        # Ajustar limites do eixo Y
-        all_temps = [T1_in, T1_out, T2_in, T2_out]
-        ax2.set_ylim(min(all_temps)-10, max(all_temps)+10)
-        
-        plt.tight_layout()
         st.pyplot(fig)
 
 elif calc_type == "Reynolds & Duty":
