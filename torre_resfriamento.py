@@ -71,7 +71,7 @@ st.markdown("""
         line-height: 1.2;
     }
     .metric-unit {
-        font-size: 18px;
+        font-size: 28px;
         color: #7f8c8d;
         margin-top: 5px;
     }
