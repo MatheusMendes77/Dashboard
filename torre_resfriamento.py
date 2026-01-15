@@ -71,7 +71,7 @@ st.markdown("""
         line-height: 1.2;
     }
     .metric-unit {
-        font-size: 28px;
+        font-size: 18px;
         color: #7f8c8d;
         margin-top: 5px;
     }
@@ -106,6 +106,34 @@ st.markdown("""
         margin: 20px 0;
         border-left: 5px solid #4CAF50;
     }
+    .param-box {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .param-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        font-size: 16px;
+    }
+    .param-unit {
+        color: #666;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    .center-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -121,23 +149,23 @@ with st.sidebar:
     st.header("⚙️ Parâmetros de Entrada")
     
     st.markdown('<div class="sidebar-header">Dados Básicos</div>', unsafe_allow_html=True)
-    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=1000.0, step=50.0, format="%.2f")
-    Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=50.0, step=5.0, format="%.2f")
-    T_retorno = st.number_input("Temperatura de Retorno (°C)", min_value=0.0, value=40.0, step=1.0, format="%.1f")
-    T_bacia = st.number_input("Temperatura de Bacia (°C)", min_value=0.0, value=30.0, step=1.0, format="%.1f")
-    perc_arraste = st.number_input("% Arraste", min_value=0.0, max_value=100.0, value=0.1, step=0.01, format="%.4f")
+    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=0.0, step=50.0, format="%.2f")
+    Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=0.0, step=5.0, format="%.2f")
+    T_retorno = st.number_input("Temperatura de Retorno (°C)", min_value=0.0, value=0.0, step=1.0, format="%.1f")
+    T_bacia = st.number_input("Temperatura de Bacia (°C)", min_value=0.0, value=0.0, step=1.0, format="%.1f")
+    perc_arraste = st.number_input("% Arraste", min_value=0.0, max_value=100.0, value=0.0, step=0.01, format="%.4f")
     perc_utilizacao = st.number_input("% Utilização", min_value=0.0, max_value=100.0, value=100.0, step=5.0, format="%.1f")
     
     st.markdown("---")
     st.markdown('<div class="sidebar-header">Ciclos de Concentração</div>', unsafe_allow_html=True)
     
-    # Dicionário de parâmetros com valores padrão
+    # Dicionário de parâmetros com valores padrão VAZIOS
     parametros = {
-        "Sílica": {"torre": 150.0, "reposicao": 50.0, "unidade": "ppm"},
-        "Cloreto": {"torre": 200.0, "reposicao": 50.0, "unidade": "ppm"},
-        "Dureza Total": {"torre": 300.0, "reposicao": 100.0, "unidade": "ppm CaCO₃"},
-        "Alcalinidade Total": {"torre": 250.0, "reposicao": 80.0, "unidade": "ppm CaCO₃"},
-        "Ferro Total": {"torre": 1.5, "reposicao": 0.3, "unidade": "ppm"}
+        "Sílica": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm"},
+        "Cloreto": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm"},
+        "Dureza Total": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm CaCO₃"},
+        "Alcalinidade Total": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm CaCO₃"},
+        "Ferro Total": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm"}
     }
     
     # Criar colunas para cada parâmetro
@@ -183,14 +211,14 @@ with st.sidebar:
         
         if ciclo_selecionado == "Usar valor manual":
             ciclos = st.number_input("Ciclos de Concentração (manual)", 
-                                     min_value=1.0, value=3.0, step=0.5, format="%.2f")
+                                     min_value=1.0, value=0.0, step=0.5, format="%.2f")
         else:
             ciclos = ciclos_calculados[ciclo_selecionado]
             st.success(f"**Usando ciclo de {ciclo_selecionado}:** {formatar_numero(ciclos, 2)} vezes")
     else:
         st.warning("Insira valores de parâmetros para calcular ciclos")
         ciclos = st.number_input("Ciclos de Concentração", 
-                                 min_value=1.0, value=3.0, step=0.5, format="%.2f")
+                                 min_value=1.0, value=0.0, step=0.5, format="%.2f")
     
     st.markdown("---")
     
@@ -218,7 +246,8 @@ if st.session_state.calcular:
             perda_liquida = evaporacao / (ciclos - 1)
         else:
             perda_liquida = 0.0
-            st.error("⚠️ Ciclos de concentração devem ser maiores que 1!")
+            if ciclos <= 1 and ciclos > 0:
+                st.error("⚠️ Ciclos de concentração devem ser maiores que 1!")
         
         # 4. HTI (Índice de Tempo de Retenção)
         if perda_liquida > 0:
@@ -394,22 +423,54 @@ else:
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("### 🔬 Parâmetros Químicos Disponíveis")
+    
+    # Container centralizado
+    st.markdown('<div class="center-container">', unsafe_allow_html=True)
+    
+    # Criar uma linha com os 5 parâmetros centralizados
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
-        st.info("**Sílica**\n\nppm")
+        st.markdown('''
+        <div class="param-box">
+            <div class="param-title">Sílica</div>
+            <div class="param-unit">ppm</div>
+        </div>
+        ''', unsafe_allow_html=True)
     
     with col2:
-        st.info("**Cloreto**\n\nppm")
+        st.markdown('''
+        <div class="param-box">
+            <div class="param-title">Cloreto</div>
+            <div class="param-unit">ppm</div>
+        </div>
+        ''', unsafe_allow_html=True)
     
     with col3:
-        st.info("**Dureza Total**\n\nppm CaCO₃")
+        st.markdown('''
+        <div class="param-box">
+            <div class="param-title">Dureza Total</div>
+            <div class="param-unit">ppm CaCO₃</div>
+        </div>
+        ''', unsafe_allow_html=True)
     
     with col4:
-        st.info("**Alcalinidade Total**\n\nppm CaCO₃")
+        st.markdown('''
+        <div class="param-box">
+            <div class="param-title">Alcalinidade Total</div>
+            <div class="param-unit">ppm CaCO₃</div>
+        </div>
+        ''', unsafe_allow_html=True)
     
     with col5:
-        st.info("**Ferro Total**\n\nppm")
+        st.markdown('''
+        <div class="param-box">
+            <div class="param-title">Ferro Total</div>
+            <div class="param-unit">ppm</div>
+        </div>
+        ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
     st.info("⚡ **Clique no botão CALCULAR na barra lateral para começar**")
