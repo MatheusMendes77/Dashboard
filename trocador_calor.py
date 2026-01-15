@@ -75,12 +75,18 @@ def calculate_fouling(U_dirty, U_clean):
 
 def calculate_flow_coefficient(F_clean, dP_clean, dP_current, F_current=None):
     """Calcula coeficiente de vazão e estimativa"""
-    if dP_clean > 0:
+    if dP_clean > 0 and dP_current > 0:
+        # Coeficiente C (característica do trocador limpo)
         C_clean = F_clean / np.sqrt(dP_clean)
+        
+        # Vazão estimada mantendo C constante
         F_estimated = C_clean * np.sqrt(dP_current)
         
         if F_current is not None and F_current > 0:
-            fouling_percentage = (1 - (np.sqrt(dP_clean)/np.sqrt(dP_current))) * 100
+            # Fouling por aumento percentual na queda de pressão
+            fouling_percentage = ((dP_current - dP_clean) / dP_clean) * 100
+            
+            # Desvio entre vazão estimada e real
             deviation = ((F_estimated - F_current) / F_current) * 100
         else:
             fouling_percentage = 0
@@ -189,7 +195,6 @@ if calc_type == "Análise Completa":
                      delta_color="inverse" if balance_error > 5 else "normal")
         
         # Gráfico de temperaturas
-        # Gráfico de temperaturas - VERSÃO MELHORADA
         fig, ax = plt.subplots(figsize=(10, 6))
         
         # Determinar temperaturas baseado no tipo de escoamento
@@ -203,9 +208,9 @@ if calc_type == "Análise Completa":
             hot_labels = [f'{T1_in:.1f}°C', f'{T1_out:.1f}°C']
             
             # Lado frio: saída -> entrada (sentido oposto)
-            cold_positions = [1, 0]  # Invertido!
-            cold_temps = [T2_in, T2_out]  # Mas temperaturas na ordem normal
-            cold_labels = [f'{T2_out:.1f}°C', f'{T2_in:.1f}°C']  # Labels invertidos
+            cold_positions = [1, 0]
+            cold_temps = [T2_in, T2_out]
+            cold_labels = [f'{T2_out:.1f}°C', f'{T2_in:.1f}°C']
             
             title_suffix = ' (Contracorrente)'
         else:
@@ -240,7 +245,6 @@ if calc_type == "Análise Completa":
         
         # Adicionar rótulos de dados em cada ponto
         for i, (x, y, label) in enumerate(zip(hot_positions, hot_temps, hot_labels)):
-            # Posicionar label acima do ponto para quente, abaixo para frio
             va = 'bottom' if y > cold_temps[i] else 'top'
             offset = 1 if va == 'bottom' else -1
             ax.annotate(label, 
@@ -257,7 +261,6 @@ if calc_type == "Análise Completa":
                                  edgecolor='red'))
         
         for i, (x, y, label) in enumerate(zip(cold_positions, cold_temps, cold_labels)):
-            # Posicionar label oposto ao lado quente
             va = 'top' if y < hot_temps[i] else 'bottom'
             offset = -1 if va == 'top' else 1
             ax.annotate(label, 
@@ -273,9 +276,8 @@ if calc_type == "Análise Completa":
                                  alpha=0.8,
                                  edgecolor='blue'))
         
-        # Área entre as curvas (diferença de temperatura)
+        # Área entre as curvas
         x_fill = np.array([0, 0.2, 0.4, 0.6, 0.8, 1.0])
-        # Interpolar temperaturas para preenchimento suave
         hot_fill = np.interp(x_fill, hot_positions, hot_temps)
         cold_fill = np.interp(x_fill, cold_positions, cold_temps)
         ax.fill_between(x_fill, hot_fill, cold_fill, 
@@ -300,19 +302,15 @@ if calc_type == "Análise Completa":
         ax.set_ylim(ymin, ymax)
         
         # Adicionar setas indicando direção do fluxo
-        arrow_props = dict(arrowstyle='->', lw=2, color='black')
-        
         # Seta para lado quente
         ax.annotate('', xy=(0.7, hot_temps[0]), xytext=(0.3, hot_temps[0]),
                     arrowprops=dict(arrowstyle='->', lw=2, color='red', alpha=0.7))
         
-        # Seta para lado frio (direção depende do tipo)
+        # Seta para lado frio
         if flow_type == "Contracorrente":
-            # Sentido oposto
             ax.annotate('', xy=(0.3, cold_temps[1]), xytext=(0.7, cold_temps[1]),
                         arrowprops=dict(arrowstyle='->', lw=2, color='blue', alpha=0.7))
         else:
-            # Mesmo sentido
             ax.annotate('', xy=(0.7, cold_temps[0]), xytext=(0.3, cold_temps[0]),
                         arrowprops=dict(arrowstyle='->', lw=2, color='blue', alpha=0.7))
         
@@ -351,7 +349,6 @@ elif calc_type == "Reynolds & Duty":
             st.metric("Número de Reynolds", f"{Re:,.0f}")
             st.metric("Regime de Escoamento", regime)
             
-            # Informações adicionais
             st.info(f"""
             **Interpretação:**
             - Re < 2.300: Escoamento Laminar
@@ -372,7 +369,6 @@ elif calc_type == "Reynolds & Duty":
             st.metric("Duty Térmico", f"{Q/1000:.2f} kW")
             st.metric("Por kg de fluido", f"{Q/m/1000:.2f} kJ/kg")
             
-            # Equivalências
             st.info(f"""
             **Equivalências:**
             - {Q/1000:.1f} kW
@@ -396,8 +392,8 @@ elif calc_type == "Fouling & Monitoramento":
             
         with col2:
             st.subheader("Condições Atuais (Operação)")
-            U_dirty = st.number_input("U operacional (W/m²·K)", min_value=0.0, value=600.0, key="Ud")
-            dP_current = st.number_input("ΔP atual (Pa)", min_value=0.0, value=40000.0, key="dPnow")
+            U_dirty = st.number_input("U operacional (W/m²·K)", min_value=0.0, value=980.0, key="Ud")
+            dP_current = st.number_input("ΔP atual (Pa)", min_value=0.0, value=25500.0, key="dPnow")
             F_current = st.number_input("Vazão atual (kg/s)", min_value=0.0, value=10.0, key="Fnow")
         
         if st.button("Calcular Fouling"):
@@ -423,9 +419,9 @@ elif calc_type == "Fouling & Monitoramento":
                 st.metric("Fouling por ΔP", f"{fouling_percent:.1f}%")
                 st.metric("Desvio Vazão", f"{deviation:.1f}%", 
                          delta=f"{deviation:.1f}%", 
-                         delta_color="inverse")
+                         delta_color="inverse" if abs(deviation) > 2 else "normal")
             
-            # ============ NOVO GRÁFICO AQUI ============
+            # ============ GRÁFICO ============
             st.subheader("📊 Visualização do Fouling")
             
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
@@ -447,14 +443,19 @@ elif calc_type == "Fouling & Monitoramento":
             
             # Linha de referência e seta
             ax1.axhline(y=F_clean, color='green', linestyle='--', alpha=0.7, label='Vazão Limpa')
-            if deviation > 0:
-                arrow_x = 1.0  # Posição da barra "Vazão Real"
-                arrow_y = F_estimated
-                ax1.annotate(f'↗ {deviation:.1f}%', 
+            
+            # Seta de desvio
+            if abs(deviation) > 0.5:
+                arrow_x = 1.0
+                arrow_y = F_estimated if deviation > 0 else F_current
+                arrow_color = 'red' if deviation > 0 else 'blue'
+                arrow_direction = '↗' if deviation > 0 else '↙'
+                
+                ax1.annotate(f'{arrow_direction} {abs(deviation):.1f}%', 
                             xy=(arrow_x, F_current),
                             xytext=(arrow_x, arrow_y),
-                            arrowprops=dict(arrowstyle='->', lw=2, color='red'),
-                            ha='center', va='bottom' if F_current > F_estimated else 'top',
+                            arrowprops=dict(arrowstyle='->', lw=2, color=arrow_color),
+                            ha='center', va='bottom' if deviation > 0 else 'top',
                             fontweight='bold',
                             bbox=dict(boxstyle="round,pad=0.3", facecolor='yellow', alpha=0.8))
             
@@ -462,9 +463,9 @@ elif calc_type == "Fouling & Monitoramento":
             ax1.grid(axis='y', alpha=0.3)
             
             # Gráfico 2: Indicador de fouling
-            fouling_levels = ['Baixo (<5%)', 'Moderado (5-10%)', 'Alto (10-20%)', 'Severo (>20%)']
-            fouling_ranges = [0, 5, 10, 20, 100]
-            colors_gauge = ['green', 'yellowgreen', 'orange', 'red']
+            fouling_levels = ['Excelente (<1%)', 'Baixo (1-3%)', 'Moderado (3-8%)', 'Alto (8-15%)', 'Severo (>15%)']
+            fouling_ranges = [0, 1, 3, 8, 15, 100]
+            colors_gauge = ['darkgreen', 'green', 'yellowgreen', 'orange', 'red']
             
             # Encontrar posição atual
             current_level = 0
@@ -506,16 +507,19 @@ elif calc_type == "Fouling & Monitoramento":
             
             plt.tight_layout()
             st.pyplot(fig)
-            # ============ FIM DO NOVO GRÁFICO ============
             
             # Recomendação
             st.subheader("🎯 Recomendação")
-            if fouling_percent > 20:
-                st.error("⚠️ **ALERTA:** Fouling severo (>20%). Programar limpeza imediata.")
-            elif fouling_percent > 10:
-                st.warning("⚠️ **ATENÇÃO:** Fouling moderado (10-20%). Monitorar de perto.")
+            if fouling_percent > 15:
+                st.error("⚠️ **ALERTA:** Fouling severo (>15%). Programar limpeza.")
+            elif fouling_percent > 8:
+                st.warning("⚠️ **ATENÇÃO:** Fouling alto (8-15%). Monitorar de perto.")
+            elif fouling_percent > 3:
+                st.info("🔍 **OBSERVAÇÃO:** Fouling moderado (3-8%). Manutenção programada.")
+            elif fouling_percent > 1:
+                st.success("✅ **NORMAL:** Fouling baixo (1-3%). Continuar operação.")
             else:
-                st.success("✅ Condição aceitável (<10%). Continuar operação normal.")
+                st.success("✅ **EXCELENTE:** Fouling insignificante (<1%). Condições ótimas.")
     
     with tab2:
         st.subheader("Monitoramento Contínuo por ΔP")
@@ -523,7 +527,7 @@ elif calc_type == "Fouling & Monitoramento":
         # Simulação de dados históricos
         days = list(range(0, 31, 3))
         dP_clean_ref = 25000
-        fouling_growth = [0, 5, 8, 12, 18, 22, 28, 35, 42, 50, 58]
+        fouling_growth = [0, 1, 2, 3, 5, 7, 10, 12, 15, 18, 22]
         
         dP_values = [dP_clean_ref * (1 + f/100) for f in fouling_growth]
         U_values = [1000 * (1 - f/100) for f in fouling_growth]
@@ -572,9 +576,11 @@ elif calc_type == "Fouling & Monitoramento":
         • **U aumentando** + **ΔP diminuindo** = Melhoria após limpeza
         
         **Limites recomendados:**
-        - Fouling > 20%: Limpeza imediata
-        - Fouling 10-20%: Programar limpeza
-        - Fouling < 10%: Manutenção normal
+        - Fouling > 15%: Limpeza imediata
+        - Fouling 8-15%: Programar limpeza
+        - Fouling 3-8%: Manutenção programada
+        - Fouling 1-3%: Condição normal
+        - Fouling < 1%: Excelente
         """)
        
 elif calc_type == "Vapor-Líquido":
@@ -605,7 +611,7 @@ elif calc_type == "Vapor-Líquido":
         T_liq_in = st.number_input("T entrada líquido (°C)", value=25.0)
         T_liq_out = st.number_input("T saída líquido (°C)", value=85.0)
     
-    # Propriedades do vapor (valores típicos)
+    # Propriedades do vapor
     st.subheader("📊 Propriedades Termodinâmicas")
     col_p1, col_p2, col_p3 = st.columns(3)
     
@@ -620,20 +626,17 @@ elif calc_type == "Vapor-Líquido":
         # Duty do lado líquido
         Q_liquid = calculate_duty(m_liquid, cp_liquid, T_liq_out - T_liq_in)
         
-        # Duty do lado vapor (depende do processo)
+        # Duty do lado vapor
         if process_type == "Aquecimento com Vapor":
-            # Vapor condensa parcialmente
             Q_vapor = m_vapor * (h_fg * (1 - x_vapor_out) + 
                                 cp_condensado * (T_vapor_in - 100) * (1 - x_vapor_out))
             process_desc = f"Vapor condensa de título 1.0 para {x_vapor_out:.2f}"
             
         elif process_type == "Condensação Total":
-            # Condensação total + subresfriamento
             Q_vapor = m_vapor * (h_fg + cp_condensado * (100 - T_cond_out))
             process_desc = f"Condensação total + subresfriamento a {T_cond_out}°C"
             
-        else:  # Superaquecedor
-            # Apenas resfriamento do vapor superaquecido
+        else:
             Q_vapor = m_vapor * cp_vapor * (T_vapor_in - T_vapor_out)
             process_desc = f"Resfriamento vapor de {T_vapor_in} para {T_vapor_out}°C"
         
