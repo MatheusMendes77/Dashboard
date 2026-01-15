@@ -44,18 +44,23 @@ st.markdown("""
         background-color: #ffffff;
         padding: 25px;
         border-radius: 12px;
-        margin: 15px 0;
+        margin: 15px;
         border-left: 6px solid #4CAF50;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         text-align: center;
         transition: transform 0.3s ease;
+        height: 100%;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     .metric-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 6px 12px rgba(0,0,0,0.15);
     }
     .metric-title {
-        margin: 0 0 10px 0;
+        margin: 0 0 15px 0;
         color: #1f77b4;
         font-size: 20px;
         font-weight: 600;
@@ -65,6 +70,7 @@ st.markdown("""
         font-weight: bold;
         color: #2c3e50;
         margin: 10px 0;
+        line-height: 1.2;
     }
     .metric-unit {
         font-size: 18px;
@@ -75,8 +81,8 @@ st.markdown("""
         color: #1f77b4;
         font-size: 28px;
         font-weight: bold;
-        margin: 20px 0;
-        padding-bottom: 10px;
+        margin: 20px 0 30px 0;
+        padding-bottom: 15px;
         border-bottom: 3px solid #eee;
         text-align: center;
     }
@@ -86,32 +92,33 @@ st.markdown("""
         margin-top: 20px;
         font-size: 16px;
     }
-    .results-container {
+    .results-grid-container {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        max-width: 800px;
-        margin: 0 auto;
+        justify-content: center;
+        padding: 0 20px;
     }
-    .results-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        width: 100%;
-        margin-top: 20px;
-    }
-    @media (max-width: 768px) {
-        .results-grid {
-            grid-template-columns: 1fr;
-        }
+    .results-column {
+        flex: 1;
+        max-width: 500px;
+        margin: 0 10px;
     }
     .consistency-check {
         background-color: #f8f9fa;
         padding: 20px;
         border-radius: 10px;
-        margin-top: 30px;
+        margin: 40px auto 20px auto;
         text-align: center;
         border: 1px solid #e9ecef;
+        max-width: 900px;
+    }
+    .button-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 30px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -249,89 +256,89 @@ if st.session_state.calcular:
         # 7. Reposição
         reposicao = evaporacao + perda_liquida
         
-        # Container centralizado para resultados
-        st.markdown('<div class="results-container">', unsafe_allow_html=True)
+        # Container com duas colunas
+        st.markdown('<div class="results-grid-container">', unsafe_allow_html=True)
         
-        # Grade de resultados
-        st.markdown('<div class="results-grid">', unsafe_allow_html=True)
+        # Coluna da Esquerda
+        col1, col2 = st.columns(2)
         
-        # Card 1: Delta Temperatura
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Delta Temperatura</div>
-            <div class="metric-value">{formatar_numero(delta_T, 2)}</div>
-            <div class="metric-unit">°C</div>
-        </div>
-        ''', unsafe_allow_html=True)
+        with col1:
+            # Card 1: Delta Temperatura
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Delta Temperatura</div>
+                <div class="metric-value">{formatar_numero(delta_T, 2)}</div>
+                <div class="metric-unit">°C</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Card 2: Evaporação
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Evaporação</div>
+                <div class="metric-value">{formatar_numero(evaporacao, 3)}</div>
+                <div class="metric-unit">m³/h</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Card 3: Perda Líquida
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Perda Líquida</div>
+                <div class="metric-value">{formatar_numero(perda_liquida, 3)}</div>
+                <div class="metric-unit">m³/h</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Card 4: HTI
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">HTI</div>
+                <div class="metric-value">{formatar_numero(HTI, 2)}</div>
+                <div class="metric-unit">horas</div>
+            </div>
+            ''', unsafe_allow_html=True)
         
-        # Card 2: Evaporação
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Evaporação</div>
-            <div class="metric-value">{formatar_numero(evaporacao, 3)}</div>
-            <div class="metric-unit">m³/h</div>
-        </div>
-        ''', unsafe_allow_html=True)
+        with col2:
+            # Card 5: Perda por Arraste
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Perda por Arraste</div>
+                <div class="metric-value">{formatar_numero(perda_arraste, 3)}</div>
+                <div class="metric-unit">m³/h</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Card 6: Purga do Sistema
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Purga do Sistema</div>
+                <div class="metric-value">{formatar_numero(purgas, 3)}</div>
+                <div class="metric-unit">m³/h</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Card 7: Reposição
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Reposição</div>
+                <div class="metric-value">{formatar_numero(reposicao, 3)}</div>
+                <div class="metric-unit">m³/h</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Card 8: Ciclos de Concentração
+            st.markdown(f'''
+            <div class="metric-card">
+                <div class="metric-title">Ciclos de Concentração</div>
+                <div class="metric-value">{formatar_numero(ciclos, 2)}</div>
+                <div class="metric-unit">vezes</div>
+            </div>
+            ''', unsafe_allow_html=True)
         
-        # Card 3: Perda Líquida
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Perda Líquida</div>
-            <div class="metric-value">{formatar_numero(perda_liquida, 3)}</div>
-            <div class="metric-unit">m³/h</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Card 4: HTI
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">HTI</div>
-            <div class="metric-value">{formatar_numero(HTI, 2)}</div>
-            <div class="metric-unit">horas</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Card 5: Perda por Arraste
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Perda por Arraste</div>
-            <div class="metric-value">{formatar_numero(perda_arraste, 3)}</div>
-            <div class="metric-unit">m³/h</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Card 6: Purga do Sistema
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Purga do Sistema</div>
-            <div class="metric-value">{formatar_numero(purgas, 3)}</div>
-            <div class="metric-unit">m³/h</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Card 7: Reposição
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Reposição</div>
-            <div class="metric-value">{formatar_numero(reposicao, 3)}</div>
-            <div class="metric-unit">m³/h</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Card 8: Ciclos de Concentração
-        st.markdown(f'''
-        <div class="metric-card">
-            <div class="metric-title">Ciclos de Concentração</div>
-            <div class="metric-value">{formatar_numero(ciclos, 2)}</div>
-            <div class="metric-unit">vezes</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)  # Fecha results-grid
-        st.markdown('</div>', unsafe_allow_html=True)  # Fecha results-container
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha results-grid-container
         
         # Verificações de consistência (mais discreto)
-        st.markdown("---")
         st.markdown('<div class="consistency-check">', unsafe_allow_html=True)
         st.markdown("### ✅ Verificação de Consistência")
         
@@ -350,9 +357,10 @@ if st.session_state.calcular:
     except Exception as e:
         st.error(f"Erro nos cálculos: {str(e)}")
     
-    # Botões para ações
-    st.markdown("---")
-    col_b1, col_b2, col_b3 = st.columns(3)
+    # Botões para ações (centralizados)
+    st.markdown('<div class="button-row">', unsafe_allow_html=True)
+    
+    col_b1, col_b2, col_b3 = st.columns([1, 1, 1])
     
     with col_b1:
         if st.button("🔄 Novo Cálculo", use_container_width=True):
@@ -417,6 +425,8 @@ if st.session_state.calcular:
             mime="text/csv",
             use_container_width=True
         )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     # Tela inicial quando ainda não calculou
