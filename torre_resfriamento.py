@@ -78,7 +78,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📊 Calculadora de Torre de Resfriamento")
+st.title("🗼 Calculadora de Torre de Resfriamento")
 st.markdown("---")
 
 # Inicializar estado da sessão
@@ -87,7 +87,7 @@ if 'calcular' not in st.session_state:
 
 # Sidebar para parâmetros de entrada
 with st.sidebar:
-    st.header("⚙️ Parâmetros de Entrada")
+    st.header("💧 Parâmetros de Entrada")
     
     st.markdown('<div class="sidebar-header">Dados Básicos</div>', unsafe_allow_html=True)
     VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=1000.0, step=50.0, format="%.2f")
