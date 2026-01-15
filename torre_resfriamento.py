@@ -4,17 +4,36 @@ import pandas as pd
 st.set_page_config(page_title="Calculadora de Torre de Resfriamento", layout="wide")
 
 def formatar_numero(valor, casas_decimais=3):
-    """Formata número com vírgula como separador decimal"""
+    """Formata número com vírgula como separador decimal e ponto como separador de milhar"""
     try:
         if valor is None:
-            return "0,0"
+            return "0,00"
         
         if pd.isna(valor):
-            return "0,0"
+            return "0,00"
             
+        # Formata com o número correto de casas decimais
         format_string = f"{{:.{casas_decimais}f}}"
         numero_formatado = format_string.format(float(valor))
-        return numero_formatado.replace('.', ',')
+        
+        # Separa parte inteira e decimal
+        partes = numero_formatado.split('.')
+        parte_inteira = partes[0]
+        parte_decimal = partes[1] if len(partes) > 1 else ''
+        
+        # Adiciona separador de milhar
+        parte_inteira_com_pontos = ""
+        for i, char in enumerate(reversed(parte_inteira)):
+            if i > 0 and i % 3 == 0:
+                parte_inteira_com_pontos = '.' + parte_inteira_com_pontos
+            parte_inteira_com_pontos = char + parte_inteira_com_pontos
+        
+        # Retorna com vírgula como separador decimal
+        if parte_decimal:
+            return f"{parte_inteira_com_pontos},{parte_decimal}"
+        else:
+            return f"{parte_inteira_com_pontos}"
+            
     except Exception as e:
         return f"{valor}"
 
@@ -149,23 +168,23 @@ with st.sidebar:
     st.header("⚙️ Parâmetros de Entrada")
     
     st.markdown('<div class="sidebar-header">Dados Básicos</div>', unsafe_allow_html=True)
-    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=0.0, step=50.0, format="%.2f")
-    Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=0.0, step=5.0, format="%.2f")
-    T_retorno = st.number_input("Temperatura de Retorno (°C)", min_value=0.0, value=0.0, step=1.0, format="%.1f")
-    T_bacia = st.number_input("Temperatura de Bacia (°C)", min_value=0.0, value=0.0, step=1.0, format="%.1f")
-    perc_arraste = st.number_input("% Arraste", min_value=0.0, max_value=100.0, value=0.0, step=0.01, format="%.4f")
+    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=None, step=50.0, format="%.2f", placeholder="Ex: 1000,00")
+    Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=None, step=5.0, format="%.2f", placeholder="Ex: 50,00")
+    T_retorno = st.number_input("Temperatura de Retorno (°C)", min_value=0.0, value=None, step=1.0, format="%.1f", placeholder="Ex: 40,0")
+    T_bacia = st.number_input("Temperatura de Bacia (°C)", min_value=0.0, value=None, step=1.0, format="%.1f", placeholder="Ex: 30,0")
+    perc_arraste = st.number_input("% Arraste", min_value=0.0, max_value=100.0, value=None, step=0.01, format="%.4f", placeholder="Ex: 0,1000")
     perc_utilizacao = st.number_input("% Utilização", min_value=0.0, max_value=100.0, value=100.0, step=5.0, format="%.1f")
     
     st.markdown("---")
     st.markdown('<div class="sidebar-header">Ciclos de Concentração</div>', unsafe_allow_html=True)
     
-    # Dicionário de parâmetros com valores padrão VAZIOS
+    # Dicionário de parâmetros com valores padrão VAZIOS (None)
     parametros = {
-        "Sílica": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm"},
-        "Cloreto": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm"},
-        "Dureza Total": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm CaCO₃"},
-        "Alcalinidade Total": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm CaCO₃"},
-        "Ferro Total": {"torre": 0.0, "reposicao": 0.0, "unidade": "ppm"}
+        "Sílica": {"torre": None, "reposicao": None, "unidade": "ppm"},
+        "Cloreto": {"torre": None, "reposicao": None, "unidade": "ppm"},
+        "Dureza Total": {"torre": None, "reposicao": None, "unidade": "ppm CaCO₃"},
+        "Alcalinidade Total": {"torre": None, "reposicao": None, "unidade": "ppm CaCO₃"},
+        "Ferro Total": {"torre": None, "reposicao": None, "unidade": "ppm"}
     }
     
     # Criar colunas para cada parâmetro
@@ -181,20 +200,22 @@ with st.sidebar:
                 step=10.0 if "ppm" in dados["unidade"] else 0.1,
                 key=f"torre_{param}",
                 format="%.2f",
-                help=f"{param} na torre ({dados['unidade']})"
+                help=f"{param} na torre ({dados['unidade']})",
+                placeholder="Ex: 150,00"
             )
         with col2:
             repos_val = st.number_input(
                 f"{param} Reposição", 
-                min_value=0.01, 
+                min_value=0.0,  # Alterado de 0.01 para 0.0 para permitir 0
                 value=dados["reposicao"],
                 step=5.0 if "ppm" in dados["unidade"] else 0.1,
                 key=f"repos_{param}",
                 format="%.2f",
-                help=f"{param} na reposição ({dados['unidade']})"
+                help=f"{param} na reposição ({dados['unidade']})",
+                placeholder="Ex: 50,00"
             )
         
-        if repos_val > 0:
+        if repos_val is not None and repos_val > 0 and torre_val is not None:
             ciclo = torre_val / repos_val
             ciclos_calculados[param] = ciclo
     
@@ -211,14 +232,16 @@ with st.sidebar:
         
         if ciclo_selecionado == "Usar valor manual":
             ciclos = st.number_input("Ciclos de Concentração (manual)", 
-                                     min_value=1.0, value=0.0, step=0.5, format="%.2f")
+                                     min_value=1.0, value=None, step=0.5, format="%.2f",
+                                     placeholder="Ex: 3,00")
         else:
             ciclos = ciclos_calculados[ciclo_selecionado]
             st.success(f"**Usando ciclo de {ciclo_selecionado}:** {formatar_numero(ciclos, 2)} vezes")
     else:
         st.warning("Insira valores de parâmetros para calcular ciclos")
         ciclos = st.number_input("Ciclos de Concentração", 
-                                 min_value=1.0, value=0.0, step=0.5, format="%.2f")
+                                 min_value=1.0, value=None, step=0.5, format="%.2f",
+                                 placeholder="Ex: 3,00")
     
     st.markdown("---")
     
@@ -232,6 +255,15 @@ if st.session_state.calcular:
     st.markdown('<div class="result-title">📈 RESULTADOS DOS CÁLCULOS</div>', unsafe_allow_html=True)
     
     try:
+        # Tratar valores None
+        VZ_rec = VZ_rec if VZ_rec is not None else 0.0
+        Vol_estatico = Vol_estatico if Vol_estatico is not None else 0.0
+        T_retorno = T_retorno if T_retorno is not None else 0.0
+        T_bacia = T_bacia if T_bacia is not None else 0.0
+        perc_arraste = perc_arraste if perc_arraste is not None else 0.0
+        perc_utilizacao = perc_utilizacao if perc_utilizacao is not None else 100.0
+        ciclos = ciclos if ciclos is not None else 1.0
+        
         # Converter porcentagens para decimal
         perc_utilizacao_decimal = perc_utilizacao / 100.0
         
