@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Calculadora de Torre de Resfriamento", layout="wide")
 
-st.title("📊 Calculadora de Torre de Resfriamento")
+st.title("🗼 Calculadora de Torre de Resfriamento")
 
 st.markdown("### 🔧 Parâmetros de Entrada")
 
