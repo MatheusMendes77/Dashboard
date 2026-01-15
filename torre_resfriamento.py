@@ -103,52 +103,126 @@ st.markdown("""
     .flow-step {
         background-color: white;
         border-radius: 10px;
-        padding: 20px;
-        margin: 15px 0;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-        border-left: 5px solid #4CAF50;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        border-left: 6px solid;
     }
     .flow-title {
         font-weight: bold;
-        color: #1f77b4;
-        margin-bottom: 10px;
-        font-size: 18px;
+        margin-bottom: 20px;
+        font-size: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid;
     }
     .flow-value {
-        font-size: 28px;
+        font-size: 36px;
         font-weight: bold;
-        color: #2c3e50;
-        margin: 10px 0;
+        margin: 15px 0;
+        line-height: 1.2;
     }
     .flow-unit {
-        color: #666;
+        color: #555;
         font-size: 16px;
+        margin-top: 8px;
+        font-weight: 500;
     }
     .flow-arrow {
         text-align: center;
-        font-size: 30px;
+        font-size: 40px;
         color: #4CAF50;
-        margin: 10px 0;
+        margin: 15px 0;
+        opacity: 0.7;
     }
     .flow-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin: 20px 0;
+        gap: 25px;
+        margin: 25px 0;
     }
     .flow-grid-item {
         background-color: #f8f9fa;
-        padding: 20px;
+        padding: 25px;
         border-radius: 10px;
         text-align: center;
         border: 2px solid #e0e0e0;
+        transition: transform 0.3s ease;
+    }
+    .flow-grid-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     .flow-diagram {
-        background-color: #f0f7ff;
-        padding: 30px;
-        border-radius: 15px;
+        background-color: #f5f9ff;
+        padding: 35px;
+        border-radius: 20px;
         margin: 30px 0;
-        border: 2px solid #cce7ff;
+        border: 2px solid #d0e3ff;
+    }
+    
+    /* Cores específicas para cada seção */
+    .step-entrada {
+        border-left-color: #FF6B6B;
+    }
+    .step-entrada .flow-title {
+        color: #FF6B6B;
+        border-bottom-color: #FF6B6B;
+    }
+    .step-entrada .flow-value {
+        color: #FF6B6B;
+    }
+    
+    .step-resfriamento {
+        border-left-color: #4ECDC4;
+    }
+    .step-resfriamento .flow-title {
+        color: #4ECDC4;
+        border-bottom-color: #4ECDC4;
+    }
+    .step-resfriamento .flow-value {
+        color: #4ECDC4;
+    }
+    
+    .step-perdas {
+        border-left-color: #FFD166;
+    }
+    .step-perdas .flow-title {
+        color: #FFD166;
+        border-bottom-color: #FFD166;
+    }
+    .step-perdas .flow-value {
+        color: #FFD166;
+    }
+    
+    .step-reposicao {
+        border-left-color: #06D6A0;
+    }
+    .step-reposicao .flow-title {
+        color: #06D6A0;
+        border-bottom-color: #06D6A0;
+    }
+    .step-reposicao .flow-value {
+        color: #06D6A0;
+    }
+    
+    .flow-grid-item:nth-child(1) .flow-value {
+        color: #FF6B6B;
+    }
+    .flow-grid-item:nth-child(2) .flow-value {
+        color: #4ECDC4;
+    }
+    .flow-grid-item:nth-child(3) .flow-value {
+        color: #06D6A0;
+    }
+    
+    .button-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 40px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -246,7 +320,7 @@ with st.sidebar:
 
 # Área principal para resultados
 if st.session_state.calcular:
-    st.markdown('<h2 style="text-align: center; color: #1f77b4; margin-bottom: 30px;">📈 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="text-align: center; color: #1f77b4; margin-bottom: 30px; font-size: 32px;">📈 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
     
     try:
         # Tratar valores None
@@ -289,7 +363,7 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-diagram">', unsafe_allow_html=True)
         
         # Seção 1: Entrada de Água Quente
-        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-step step-entrada">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">📍 ENTRADA - ÁGUA QUENTE DO PROCESSO</div>', unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -307,7 +381,7 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
         
         # Seção 2: Resfriamento na Torre
-        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-step step-resfriamento">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">🏭 RESFRIAMENTO NA TORRE</div>', unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -325,7 +399,7 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
         
         # Seção 3: Perdas e Purga
-        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-step step-perdas">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">💧 PERDAS E CONTROLE</div>', unsafe_allow_html=True)
         
         # Grid com as perdas
@@ -341,7 +415,7 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
         st.markdown(f'<div class="flow-value">{formatar_numero(perda_arraste, 3)}</div>', unsafe_allow_html=True)
         st.markdown('<div class="flow-unit">Perda por Arraste</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="font-size: 12px; color: #666;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size: 14px; color: #777; margin-top: 5px;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Purga do Sistema
@@ -358,7 +432,7 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-arrow">↓</div>', unsafe_allow_html=True)
         
         # Seção 4: Reposição e Balanço
-        st.markdown('<div class="flow-step">', unsafe_allow_html=True)
+        st.markdown('<div class="flow-step step-reposicao">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">🔄 REPOSIÇÃO E BALANÇO HÍDRICO</div>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
@@ -376,9 +450,9 @@ if st.session_state.calcular:
         st.markdown("---")
         col4, col5 = st.columns(2)
         with col4:
-            st.markdown(f'**Volume Estático:** {formatar_numero(Vol_estatico, 2)} m³')
+            st.markdown(f'<div style="color: #555; font-size: 16px;"><strong>Volume Estático:</strong> {formatar_numero(Vol_estatico, 2)} m³</div>', unsafe_allow_html=True)
         with col5:
-            st.markdown(f'**Balanço:** Evaporação ({formatar_numero(evaporacao, 3)}) + Perda Líquida ({formatar_numero(perda_liquida, 3)}) = Reposição ({formatar_numero(reposicao, 3)}) m³/h')
+            st.markdown(f'<div style="color: #555; font-size: 16px;"><strong>Balanço:</strong> Evaporação ({formatar_numero(evaporacao, 3)}) + Perda Líquida ({formatar_numero(perda_liquida, 3)}) = Reposição ({formatar_numero(reposicao, 3)}) m³/h</div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
         
@@ -511,4 +585,4 @@ else:
 
 # Rodapé
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666; padding: 20px;'>📊 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #666; padding: 20px; font-size: 14px;'>📊 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
