@@ -114,18 +114,21 @@ st.markdown("""
         font-size: 20px;
         padding-bottom: 10px;
         border-bottom: 2px solid;
+        text-align: center;
     }
     .flow-value {
         font-size: 36px;
         font-weight: bold;
         margin: 15px 0;
         line-height: 1.2;
+        text-align: center;
     }
     .flow-unit {
         color: #555;
         font-size: 16px;
         margin-top: 8px;
         font-weight: 500;
+        text-align: center;
     }
     .flow-arrow {
         text-align: center;
@@ -223,6 +226,15 @@ st.markdown("""
         max-width: 600px;
         margin-left: auto;
         margin-right: auto;
+    }
+    
+    /* Centralização dos conteúdos dentro das colunas */
+    .flow-column-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -367,14 +379,20 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-title">📍 ENTRADA - ÁGUA QUENTE DO PROCESSO</div>', unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         with col1:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(T_retorno, 1)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Temperatura de Retorno</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         with col2:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(VZ_rec, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Vazão de Recirculação</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         with col3:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(perc_utilizacao, 1)}%</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Utilização da Torre</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Seta para baixo
@@ -385,14 +403,20 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-title">🏭 RESFRIAMENTO NA TORRE</div>', unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         with col1:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(delta_T, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">ΔT (Redução de Temperatura)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         with col2:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(T_bacia, 1)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Temperatura da Bacia</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         with col3:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(evaporacao, 3)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Evaporação</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Seta para baixo
@@ -415,7 +439,7 @@ if st.session_state.calcular:
         st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
         st.markdown(f'<div class="flow-value">{formatar_numero(perda_arraste, 3)}</div>', unsafe_allow_html=True)
         st.markdown('<div class="flow-unit">Perda por Arraste</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="font-size: 14px; color: #777; margin-top: 5px;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size: 14px; color: #777; margin-top: 5px; text-align: center;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Purga do Sistema
@@ -437,22 +461,28 @@ if st.session_state.calcular:
         
         col1, col2, col3 = st.columns(3)
         with col1:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(reposicao, 3)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Reposição Total</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         with col2:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(ciclos, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Ciclos de Concentração</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         with col3:
+            st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">{formatar_numero(HTI, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">HTI (Tempo Retenção)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         # Informações adicionais
         st.markdown("---")
         col4, col5 = st.columns(2)
         with col4:
-            st.markdown(f'<div style="color: #555; font-size: 16px;"><strong>Volume Estático:</strong> {formatar_numero(Vol_estatico, 2)} m³</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>Volume Estático:</strong> {formatar_numero(Vol_estatico, 2)} m³</div>', unsafe_allow_html=True)
         with col5:
-            st.markdown(f'<div style="color: #555; font-size: 16px;"><strong>Balanço:</strong> Evaporação ({formatar_numero(evaporacao, 3)}) + Perda Líquida ({formatar_numero(perda_liquida, 3)}) = Reposição ({formatar_numero(reposicao, 3)}) m³/h</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>Balanço:</strong><br>Evaporação ({formatar_numero(evaporacao, 3)}) +<br>Perda Líquida ({formatar_numero(perda_liquida, 3)}) =<br>Reposição ({formatar_numero(reposicao, 3)}) m³/h</div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
         
@@ -541,40 +571,40 @@ else:
     with col1:
         st.markdown('''
         <div class="param-box">
-            <div class="param-title">Sílica</div>
-            <div class="param-unit">ppm</div>
+            <div class="param-title" style="text-align: center;">Sílica</div>
+            <div class="param-unit" style="text-align: center;">ppm</div>
         </div>
         ''', unsafe_allow_html=True)
     
     with col2:
         st.markdown('''
         <div class="param-box">
-            <div class="param-title">Cloreto</div>
-            <div class="param-unit">ppm</div>
+            <div class="param-title" style="text-align: center;">Cloreto</div>
+            <div class="param-unit" style="text-align: center;">ppm</div>
         </div>
         ''', unsafe_allow_html=True)
     
     with col3:
         st.markdown('''
         <div class="param-box">
-            <div class="param-title">Dureza Total</div>
-            <div class="param-unit">ppm CaCO₃</div>
+            <div class="param-title" style="text-align: center;">Dureza Total</div>
+            <div class="param-unit" style="text-align: center;">ppm CaCO₃</div>
         </div>
         ''', unsafe_allow_html=True)
     
     with col4:
         st.markdown('''
         <div class="param-box">
-            <div class="param-title">Alcalinidade Total</div>
-            <div class="param-unit">ppm CaCO₃</div>
+            <div class="param-title" style="text-align: center;">Alcalinidade Total</div>
+            <div class="param-unit" style="text-align: center;">ppm CaCO₃</div>
         </div>
         ''', unsafe_allow_html=True)
     
     with col5:
         st.markdown('''
         <div class="param-box">
-            <div class="param-title">Ferro Total</div>
-            <div class="param-unit">ppm</div>
+            <div class="param-title" style="text-align: center;">Ferro Total</div>
+            <div class="param-unit" style="text-align: center;">ppm</div>
         </div>
         ''', unsafe_allow_html=True)
     
