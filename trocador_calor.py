@@ -400,21 +400,6 @@ elif calc_type == "Fouling & Monitoramento":
             dP_current = st.number_input("ΔP atual (Pa)", min_value=0.0, value=40000.0, key="dPnow")
             F_current = st.number_input("Vazão atual (kg/s)", min_value=0.0, value=10.0, key="Fnow")
         
-           with tab1:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("Condições Limpas (Projeto)")
-            U_clean = st.number_input("U limpo (W/m²·K)", min_value=0.0, value=1000.0, key="Uc")
-            dP_clean = st.number_input("ΔP limpa (Pa)", min_value=0.0, value=25000.0, key="dPc")
-            F_clean = st.number_input("Vazão limpa (kg/s)", min_value=0.0, value=10.0, key="Fc")
-            
-        with col2:
-            st.subheader("Condições Atuais (Operação)")
-            U_dirty = st.number_input("U operacional (W/m²·K)", min_value=0.0, value=600.0, key="Ud")
-            dP_current = st.number_input("ΔP atual (Pa)", min_value=0.0, value=40000.0, key="dPnow")
-            F_current = st.number_input("Vazão atual (kg/s)", min_value=0.0, value=10.0, key="Fnow")
-        
         if st.button("Calcular Fouling"):
             # Cálculo de fouling por U
             R_f = calculate_fouling(U_dirty, U_clean)
@@ -465,7 +450,7 @@ elif calc_type == "Fouling & Monitoramento":
             if deviation > 0:
                 arrow_x = 1.0  # Posição da barra "Vazão Real"
                 arrow_y = F_estimated
-                ax1.annotate(f'↗ {devision:.1f}%', 
+                ax1.annotate(f'↗ {deviation:.1f}%', 
                             xy=(arrow_x, F_current),
                             xytext=(arrow_x, arrow_y),
                             arrowprops=dict(arrowstyle='->', lw=2, color='red'),
