@@ -420,7 +420,7 @@ elif calc_type == "Fouling & Monitoramento":
                 
             with col_r2:
                 st.metric("Vazão Estimada", f"{F_estimated:.2f} kg/s")
-                st.metric("Fouling por ΔP", f"{fouling_percent:.1f}%")  # ← AQUI ESTAVA O ERRO!
+                st.metric("Fouling por ΔP", f"{fouling_percent:.1f}%")
                 st.metric("Desvio Vazão", f"{deviation:.1f}%", 
                          delta=f"{deviation:.1f}%", 
                          delta_color="inverse")
@@ -429,7 +429,7 @@ elif calc_type == "Fouling & Monitoramento":
             st.subheader("🎯 Recomendação")
             if fouling_percent > 20:
                 st.error("⚠️ **ALERTA:** Fouling severo (>20%). Programar limpeza imediata.")
-            elif fouling_percent > 10:  # ← Também corrigir aqui se necessário
+            elif fouling_percent > 10:
                 st.warning("⚠️ **ATENÇÃO:** Fouling moderado (10-20%). Monitorar de perto.")
             else:
                 st.success("✅ Condição aceitável (<10%). Continuar operação normal.")
@@ -478,6 +478,21 @@ elif calc_type == "Fouling & Monitoramento":
         
         fig.tight_layout()
         st.pyplot(fig)
+    
+    with tab3:
+        st.subheader("📈 Análise de Tendências")
+        st.info("""
+        **Como interpretar as tendências:**
+        
+        • **U diminuindo** + **ΔP aumentando** = Fouling aumentando
+        • **U estável** + **ΔP estável** = Condições boas  
+        • **U aumentando** + **ΔP diminuindo** = Melhoria após limpeza
+        
+        **Limites recomendados:**
+        - Fouling > 20%: Limpeza imediata
+        - Fouling 10-20%: Programar limpeza
+        - Fouling < 10%: Manutenção normal
+        """)
        
 elif calc_type == "Vapor-Líquido":
     st.header("💨 Trocadores Vapor-Líquido / Condensadores")
