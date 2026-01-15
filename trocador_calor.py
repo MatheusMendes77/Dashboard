@@ -433,6 +433,60 @@ elif calc_type == "Fouling & Monitoramento":
         fig.tight_layout()
         st.pyplot(fig)
 
+        # Tabela resumo das temperaturas
+        st.subheader("📋 Resumo de Temperaturas")
+        
+        summary_data = {
+            'Posição': ['Entrada', 'Saída', 'ΔT', 'T média'],
+            'Lado Quente (°C)': [
+                T1_in,
+                T1_out,
+                T1_in - T1_out,
+                (T1_in + T1_out) / 2
+            ],
+            'Lado Frio (°C)': [
+                T2_in if flow_type == "Paralelo" else T2_out,
+                T2_out if flow_type == "Paralelo" else T2_in,
+                abs(T2_out - T2_in),
+                (T2_in + T2_out) / 2
+            ],
+            'ΔT Local (°C)': [
+                abs(T1_in - (T2_in if flow_type == "Paralelo" else T2_out)),
+                abs(T1_out - (T2_out if flow_type == "Paralelo" else T2_in)),
+                '-',
+                '-'
+            ]
+        }
+        
+        df_summary = pd.DataFrame(summary_data)
+        
+        # Formatação
+        def format_temp(val):
+            if isinstance(val, (int, float)):
+                return f'{val:.1f}'
+            return val
+        
+        styled_df = df_summary.copy()
+        for col in ['Lado Quente (°C)', 'Lado Frio (°C)', 'ΔT Local (°C)']:
+            styled_df[col] = styled_df[col].apply(format_temp)
+        
+        st.dataframe(styled_df, use_container_width=True)
+        
+        # Informações adicionais
+        col_info1, col_info2, col_info3 = st.columns(3)
+        
+        with col_info1:
+            st.metric("Aproximação à Equilíbrio", 
+                      f"{min(abs(T1_out - T2_in), abs(T1_in - T2_out)):.1f}°C")
+            
+        with col_info2:
+            effectiveness = (T1_in - T1_out) / (T1_in - T2_in) if (T1_in - T2_in) > 0 else 0
+            st.metric("Efetividade", f"{effectiveness*100:.1f}%")
+            
+        with col_info3:
+            st.metric("Taxa de Resfriamento", 
+                      f"{(T1_in - T1_out)/(T1_in - T2_in)*100:.1f}%" if (T1_in - T2_in) > 0 else "0%")
+
 elif calc_type == "Vapor-Líquido":
     st.header("💨 Trocadores Vapor-Líquido / Condensadores")
     
