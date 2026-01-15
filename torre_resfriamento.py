@@ -64,14 +64,14 @@ st.markdown("""
         font-weight: 600;
     }
     .metric-value {
-        font-size: 32px;
+        font-size: 40px;
         font-weight: bold;
         color: #2c3e50;
         margin: 10px 0;
         line-height: 1.2;
     }
     .metric-unit {
-        font-size: 18px;
+        font-size: 32px;
         color: #7f8c8d;
         margin-top: 5px;
     }
