@@ -400,6 +400,21 @@ elif calc_type == "Fouling & Monitoramento":
             dP_current = st.number_input("ΔP atual (Pa)", min_value=0.0, value=40000.0, key="dPnow")
             F_current = st.number_input("Vazão atual (kg/s)", min_value=0.0, value=10.0, key="Fnow")
         
+           with tab1:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Condições Limpas (Projeto)")
+            U_clean = st.number_input("U limpo (W/m²·K)", min_value=0.0, value=1000.0, key="Uc")
+            dP_clean = st.number_input("ΔP limpa (Pa)", min_value=0.0, value=25000.0, key="dPc")
+            F_clean = st.number_input("Vazão limpa (kg/s)", min_value=0.0, value=10.0, key="Fc")
+            
+        with col2:
+            st.subheader("Condições Atuais (Operação)")
+            U_dirty = st.number_input("U operacional (W/m²·K)", min_value=0.0, value=600.0, key="Ud")
+            dP_current = st.number_input("ΔP atual (Pa)", min_value=0.0, value=40000.0, key="dPnow")
+            F_current = st.number_input("Vazão atual (kg/s)", min_value=0.0, value=10.0, key="Fnow")
+        
         if st.button("Calcular Fouling"):
             # Cálculo de fouling por U
             R_f = calculate_fouling(U_dirty, U_clean)
@@ -424,6 +439,89 @@ elif calc_type == "Fouling & Monitoramento":
                 st.metric("Desvio Vazão", f"{deviation:.1f}%", 
                          delta=f"{deviation:.1f}%", 
                          delta_color="inverse")
+            
+            # ============ NOVO GRÁFICO AQUI ============
+            st.subheader("📊 Visualização do Fouling")
+            
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+            
+            # Gráfico 1: Barras de comparação
+            labels = ['Vazão Estimada', 'Vazão Real']
+            values = [F_estimated, F_current]
+            colors = ['skyblue', 'lightcoral']
+            
+            bars = ax1.bar(labels, values, color=colors, edgecolor='black')
+            ax1.set_ylabel('Vazão (kg/s)', fontweight='bold')
+            ax1.set_title('Comparação de Vazões', fontweight='bold')
+            
+            # Adicionar valores em cima das barras
+            for bar, val in zip(bars, values):
+                height = bar.get_height()
+                ax1.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                        f'{val:.2f}', ha='center', va='bottom', fontweight='bold')
+            
+            # Linha de referência e seta
+            ax1.axhline(y=F_clean, color='green', linestyle='--', alpha=0.7, label='Vazão Limpa')
+            if deviation > 0:
+                arrow_x = 1.0  # Posição da barra "Vazão Real"
+                arrow_y = F_estimated
+                ax1.annotate(f'↗ {devision:.1f}%', 
+                            xy=(arrow_x, F_current),
+                            xytext=(arrow_x, arrow_y),
+                            arrowprops=dict(arrowstyle='->', lw=2, color='red'),
+                            ha='center', va='bottom' if F_current > F_estimated else 'top',
+                            fontweight='bold',
+                            bbox=dict(boxstyle="round,pad=0.3", facecolor='yellow', alpha=0.8))
+            
+            ax1.legend()
+            ax1.grid(axis='y', alpha=0.3)
+            
+            # Gráfico 2: Indicador de fouling
+            fouling_levels = ['Baixo (<5%)', 'Moderado (5-10%)', 'Alto (10-20%)', 'Severo (>20%)']
+            fouling_ranges = [0, 5, 10, 20, 100]
+            colors_gauge = ['green', 'yellowgreen', 'orange', 'red']
+            
+            # Encontrar posição atual
+            current_level = 0
+            for i in range(len(fouling_ranges)-1):
+                if fouling_ranges[i] <= fouling_percent < fouling_ranges[i+1]:
+                    current_level = i
+                    break
+            
+            # Criar gráfico de medidor
+            ax2.axis('off')
+            ax2.set_xlim(0, 1)
+            ax2.set_ylim(0, 1)
+            
+            # Desenhar medidor
+            for i in range(len(fouling_levels)):
+                y_pos = 0.8 - i*0.15
+                color = colors_gauge[i]
+                
+                # Barra de nível
+                bar_width = 0.6
+                ax2.add_patch(plt.Rectangle((0.2, y_pos-0.05), bar_width, 0.1, 
+                                           facecolor=color, alpha=0.3, edgecolor='black'))
+                
+                # Label
+                ax2.text(0.1, y_pos, fouling_levels[i], fontsize=10, 
+                        va='center', fontweight='bold')
+                
+                # Marcação se for o nível atual
+                if i == current_level:
+                    ax2.text(0.85, y_pos, '⬅ ATUAL', fontsize=10, 
+                            va='center', fontweight='bold', color='red')
+            
+            # Valor numérico
+            ax2.text(0.5, 0.95, f'Fouling: {fouling_percent:.1f}%', 
+                    fontsize=14, fontweight='bold', ha='center',
+                    bbox=dict(boxstyle="round,pad=0.3", facecolor='lightyellow'))
+            
+            ax2.set_title('Nível de Fouling', fontweight='bold', pad=20)
+            
+            plt.tight_layout()
+            st.pyplot(fig)
+            # ============ FIM DO NOVO GRÁFICO ============
             
             # Recomendação
             st.subheader("🎯 Recomendação")
