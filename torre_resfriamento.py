@@ -66,6 +66,18 @@ st.markdown("""
         margin: 0 0 20px 0 !important;
         border-left: 5px solid #4CAF50;
     }
+        .param-box {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
     .param-title {
         font-weight: bold;
         color: #2c3e50;
@@ -129,15 +141,6 @@ st.markdown("""
         margin-top: 8px;
         font-weight: 500;
         text-align: center;
-    }
-    .flow-arrow {
-        text-align: center;
-        font-size: 40px;
-        color: #4CAF50;
-        margin: 0 !important;
-        padding: 2px 0;
-        opacity: 0.7;
-        background-color: #f5f9ff;
     }
     .flow-diagram {
         background-color: #f5f9ff;
