@@ -457,7 +457,7 @@ with st.sidebar:
     st.markdown("---")
     
     # Botão de calcular
-    if st.button("📱 CALCULAR", type="primary", use_container_width=True):
+    if st.button("✖️➗➕➖ CALCULAR", type="primary", use_container_width=True):
         st.session_state.calcular = True
         st.rerun()
 
