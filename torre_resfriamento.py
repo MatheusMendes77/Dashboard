@@ -304,14 +304,6 @@ st.markdown("""
         width: 120px;
     }
     
-    /* Ajustes específicos para os cards de informação */
-    .info-card {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid;
-        margin: 0 !important;
-    }
     
     .info-card-title {
         font-size: 18px;
