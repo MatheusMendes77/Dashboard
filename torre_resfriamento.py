@@ -63,7 +63,7 @@ st.markdown("""
         background-color: #f8f9fa;
         padding: 20px;
         border-radius: 10px;
-        margin: 20px 0;
+        margin: 0 0 20px 0 !important;
         border-left: 5px solid #4CAF50;
     }
     .param-box {
@@ -102,11 +102,23 @@ st.markdown("""
     }
     .flow-step {
         background-color: white;
-        border-radius: 10px;
+        border-radius: 0;
         padding: 25px;
-        margin: 20px 0;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        margin: 0 !important;
+        box-shadow: none;
         border-left: 6px solid;
+        border-top: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .flow-step:first-child {
+        border-top: none;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+    .flow-step:last-child {
+        border-bottom: none;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
     }
     .flow-title {
         font-weight: bold;
@@ -134,14 +146,16 @@ st.markdown("""
         text-align: center;
         font-size: 40px;
         color: #4CAF50;
-        margin: 15px 0;
+        margin: 0 !important;
+        padding: 2px 0;
         opacity: 0.7;
+        background-color: #f5f9ff;
     }
     .flow-diagram {
         background-color: #f5f9ff;
-        padding: 35px;
+        padding: 0 !important;
         border-radius: 20px;
-        margin: 30px 0;
+        margin: 0 !important;
         border: 2px solid #d0e3ff;
     }
     
@@ -201,10 +215,13 @@ st.markdown("""
     
     /* Estilos para remover quadros brancos */
     .st-emotion-cache-1y4p8pa {
-        padding: 0;
+        padding: 0 !important;
     }
     .st-emotion-cache-1y4p8pa > div {
-        padding: 0;
+        padding: 0 !important;
+    }
+    div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column"] {
+        gap: 0 !important;
     }
     
     /* Estilo para descrição adicional */
@@ -221,7 +238,7 @@ st.markdown("""
         background-color: white;
         border-radius: 15px;
         padding: 30px;
-        margin: 30px 0;
+        margin: 0 !important;
         box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         border-top: 5px solid #4CAF50;
     }
@@ -367,6 +384,29 @@ st.markdown("""
     .secao-perdas {
         border-left-color: #FFD166;
     }
+    
+    /* Ajustes gerais para remover espaçamento */
+    h1 {
+        margin-bottom: 10px !important;
+        padding-bottom: 10px !important;
+    }
+    
+    h2 {
+        margin: 10px 0 !important;
+        padding: 10px 0 !important;
+    }
+    
+    hr {
+        margin: 5px 0 !important;
+        border: none;
+        height: 1px;
+        background-color: #e0e0e0;
+    }
+    
+    .main .block-container {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -457,7 +497,7 @@ with st.sidebar:
     st.markdown("---")
     
     # Botão de calcular
-    if st.button("✖️➗➕➖ CALCULAR", type="primary", use_container_width=True):
+    if st.button("📠 CALCULAR", type="primary", use_container_width=True):
         st.session_state.calcular = True
         st.rerun()
 
@@ -503,7 +543,7 @@ if st.session_state.calcular:
         # --------------------------------------------------
         # SEÇÃO 1: FLUXO DA TORRE
         # --------------------------------------------------
-        st.markdown('<h2 style="text-align: center; color: #1f77b4; margin: 30px 0 20px 0; font-size: 32px;">📊 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align: center; color: #1f77b4; margin: 10px 0 10px 0; font-size: 32px;">📊 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
         
         # Diagrama do Fluxo da Torre
         st.markdown('<div class="flow-diagram">', unsafe_allow_html=True)
@@ -614,7 +654,7 @@ if st.session_state.calcular:
         # --------------------------------------------------
         # SEÇÃO 2: RESUMO COMPACTO
         # --------------------------------------------------
-        st.markdown("---")
+        st.markdown('<div style="height: 30px;"></div>', unsafe_allow_html=True)
         
         st.markdown('<div class="resumo-section">', unsafe_allow_html=True)
         
@@ -833,7 +873,8 @@ if st.session_state.calcular:
         # --------------------------------------------------
         # BOTÕES DE AÇÃO
         # --------------------------------------------------
-        st.markdown("---")
+        st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True)
+        
         col_b1, col_b2, col_b3 = st.columns(3)
         
         with col_b1:
@@ -907,6 +948,7 @@ if st.session_state.calcular:
 
 else:
     # Tela inicial
+    st.markdown('<div style="margin-top: 10px;"></div>', unsafe_allow_html=True)
     st.markdown("## 📋 Instruções")
     
     st.markdown('<div class="instruction-box">', unsafe_allow_html=True)
@@ -968,9 +1010,9 @@ else:
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("---")
+    st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True)
     st.info("⚡ **Clique no botão CALCULAR na barra lateral para visualizar o fluxo da torre**")
 
 # Rodapé
-st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666; padding: 20px; font-size: 14px;'>🏭 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
+st.markdown('<div style="margin-top: 20px;"></div>', unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #666; padding: 10px; font-size: 14px; background-color: #f8f9fa; border-radius: 8px;'>🏭 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
