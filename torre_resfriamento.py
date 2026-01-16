@@ -244,6 +244,15 @@ st.markdown("""
     .st-emotion-cache-1y4p8pa > div {
         padding: 0;
     }
+    
+    /* Estilo para descrição adicional */
+    .flow-descricao {
+        font-size: 14px;
+        color: #777;
+        margin-top: 5px;
+        text-align: center;
+        line-height: 1.3;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -389,12 +398,12 @@ if st.session_state.calcular:
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">🌡️ {formatar_numero(T_retorno, 1)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Temperatura de Retorno</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Temperatura de Retorno (°C)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col2:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">💧 {formatar_numero(VZ_rec, 2)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Vazão de Recirculação</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Vazão de Recirculação (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
@@ -413,47 +422,46 @@ if st.session_state.calcular:
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">📉 {formatar_numero(delta_T, 2)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">ΔT (Redução de Temperatura)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">ΔT (Redução de Temperatura) (°C)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col2:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">🌡️ {formatar_numero(T_bacia, 1)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Temperatura da Bacia</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Temperatura da Bacia (°C)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">💨 {formatar_numero(evaporacao, 3)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Evaporação</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Evaporação (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Seta para baixo
         st.markdown('<div class="flow-arrow">⬇️</div>', unsafe_allow_html=True)
         
-        # Seção 3: Perdas e Purga - AGORA EXATAMENTE IGUAL À SEÇÃO ANTERIOR
+        # Seção 3: Perdas e Controle
         st.markdown('<div class="flow-step step-perdas">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">💧 PERDAS E CONTROLE</div>', unsafe_allow_html=True)
         
-        # EXATAMENTE IGUAL À SEÇÃO "RESFRIAMENTO NA TORRE" - 3 COLUNAS LADO A LADO
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">💧 {formatar_numero(perda_liquida, 3)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Perda Líquida Total</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Perda Líquida Total (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">🌪️ {formatar_numero(perda_arraste, 3)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Perda por Arraste</div>', unsafe_allow_html=True)
-            st.markdown(f'<div style="font-size: 14px; color: #777; margin-top: 5px; text-align: center;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Perda por Arraste (m³/h)</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-descricao">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">🔄 {formatar_numero(purgas, 3)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Purga do Sistema</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Purga do Sistema (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
@@ -461,7 +469,7 @@ if st.session_state.calcular:
         # Seta para baixo
         st.markdown('<div class="flow-arrow">⬇️</div>', unsafe_allow_html=True)
         
-        # Seção 4: Reposição e Balanço
+        # Seção 4: Reposição e Balanço Hídrico
         st.markdown('<div class="flow-step step-reposicao">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">🔄 REPOSIÇÃO E BALANÇO HÍDRICO</div>', unsafe_allow_html=True)
         
@@ -469,7 +477,7 @@ if st.session_state.calcular:
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">🚰 {formatar_numero(reposicao, 3)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">Reposição Total</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">Reposição Total (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col2:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
@@ -479,7 +487,7 @@ if st.session_state.calcular:
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
             st.markdown(f'<div class="flow-value">⏱️ {formatar_numero(HTI, 2)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="flow-unit">HTI (Tempo Retenção)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flow-unit">HTI - Tempo Retenção (h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
         # Informações adicionais
@@ -488,7 +496,7 @@ if st.session_state.calcular:
         with col4:
             st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>🏊 Volume Estático:</strong> {formatar_numero(Vol_estatico, 2)} m³</div>', unsafe_allow_html=True)
         with col5:
-            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>⚖️ Balanço:</strong><br>💨 Evaporação ({formatar_numero(evaporacao, 3)}) +<br>💧 Perda Líquida ({formatar_numero(perda_liquida, 3)}) =<br>🚰 Reposição ({formatar_numero(reposicao, 3)}) m³/h</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>⚖️ Balanço Hídrico:</strong><br>💨 Evaporação ({formatar_numero(evaporacao, 3)} m³/h) +<br>💧 Perda Líquida ({formatar_numero(perda_liquida, 3)} m³/h) =<br>🚰 Reposição ({formatar_numero(reposicao, 3)} m³/h)</div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
         
