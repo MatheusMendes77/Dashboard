@@ -431,7 +431,7 @@ if st.session_state.calcular:
             st.markdown('</div>', unsafe_allow_html=True)
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">💨 {formatar_numero(evaporacao, 3)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">💨 {formatar_numero(evaporacao, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Evaporação (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -538,7 +538,7 @@ if st.session_state.calcular:
                     formatar_numero(perc_utilizacao, 1),
                     formatar_numero(ciclos, 2),
                     formatar_numero(delta_T, 1),
-                    formatar_numero(evaporacao, 1),
+                    formatar_numero(evaporacao, 2),
                     formatar_numero(perda_liquida, 2),
                     formatar_numero(HTI, 1),
                     formatar_numero(perda_arraste, 2),
