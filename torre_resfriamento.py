@@ -36,6 +36,11 @@ def formatar_numero(valor, casas_decimais=3):
 # CSS para melhorar a aparência
 st.markdown("""
 <style>
+    /* Fundo geral da aplicação */
+    .stApp {
+        background-color: #f0f2f6;
+    }
+    
     .stButton > button {
         width: 100%;
         background-color: #4CAF50;
@@ -60,14 +65,14 @@ st.markdown("""
         font-size: 16px;
     }
     .instruction-box {
-        background-color: #f8f9fa;
+        background-color: transparent;
         padding: 20px;
         border-radius: 10px;
         margin: 20px 0;
         border-left: 5px solid #4CAF50;
     }
     .param-box {
-        background-color: white;
+        background-color: transparent;
         padding: 15px;
         border-radius: 10px;
         text-align: center;
@@ -101,7 +106,7 @@ st.markdown("""
         padding: 20px;
     }
     .flow-step {
-        background-color: white;
+        background-color: transparent;
         border-radius: 10px;
         padding: 25px;
         margin: 20px 0;
@@ -138,7 +143,7 @@ st.markdown("""
         opacity: 0.7;
     }
     .flow-diagram {
-        background-color: #f5f9ff;
+        background-color: transparent;
         padding: 35px;
         border-radius: 20px;
         margin: 30px 0;
@@ -199,14 +204,6 @@ st.markdown("""
         text-align: center;
     }
     
-    /* Estilos para remover quadros brancos */
-    .st-emotion-cache-1y4p8pa {
-        padding: 0;
-    }
-    .st-emotion-cache-1y4p8pa > div {
-        padding: 0;
-    }
-    
     /* Estilo para descrição adicional */
     .flow-descricao {
         font-size: 14px;
@@ -218,7 +215,7 @@ st.markdown("""
     
     /* Seção de Resumo */
     .resumo-section {
-        background-color: white;
+        background-color: transparent;
         border-radius: 15px;
         padding: 30px;
         margin: 30px 0;
@@ -270,7 +267,7 @@ st.markdown("""
     }
     
     .dados-table tr:hover {
-        background-color: #f8f9fa;
+        background-color: rgba(248, 249, 250, 0.5);
     }
     
     .valor-cell {
@@ -298,7 +295,7 @@ st.markdown("""
     }
     
     .info-card {
-        background-color: #f8f9fa;
+        background-color: transparent;
         padding: 20px;
         border-radius: 10px;
         border-left: 4px solid;
@@ -325,7 +322,7 @@ st.markdown("""
     
     /* Balanço hídrico destacado */
     .balanco-container {
-        background-color: #e8f5e9;
+        background-color: rgba(232, 245, 233, 0.5);
         padding: 25px;
         border-radius: 12px;
         margin: 25px 0;
@@ -366,6 +363,37 @@ st.markdown("""
     
     .secao-perdas {
         border-left-color: #FFD166;
+    }
+    
+    /* Remover todos os backgrounds brancos dos containers principais */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    
+    div[data-testid="stSidebar"] {
+        background-color: #f8f9fa;
+    }
+    
+    /* Remover sombras muito fortes que criavam o efeito de "barra branca" */
+    .st-emotion-cache-1y4p8pa {
+        background-color: transparent;
+    }
+    
+    .st-emotion-cache-1y4p8pa > div {
+        background-color: transparent;
+    }
+    
+    /* Remover backgrounds brancos dos widgets */
+    .stNumberInput, .stSelectbox, .stTextInput, .stTextArea {
+        background-color: transparent;
+    }
+    
+    /* Ajustar a sidebar */
+    section[data-testid="stSidebar"] > div {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -895,7 +923,7 @@ if st.session_state.calcular:
             taxa_reposicao = (reposicao / VZ_rec * 100) if VZ_rec > 0 else 0
             
             st.markdown(f'''
-            <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px;">
+            <div style="text-align: center; padding: 10px; background-color: rgba(248, 249, 250, 0.5); border-radius: 8px;">
                 <div style="font-size: 14px; color: #666;">Taxa de Evaporação</div>
                 <div style="font-size: 18px; font-weight: bold; color: #4CAF50;">{formatar_numero(taxa_evaporacao, 2)}%</div>
                 <div style="font-size: 12px; color: #888;">da vazão de recirculação</div>
