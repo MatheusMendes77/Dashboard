@@ -197,7 +197,7 @@ st.markdown("""
         color: #FFD166;
     }
     
-    .step-sicao {
+    .step-reposicao {
         border-left-color: #06D6A0;
     }
     .step-reposicao .flow-title {
@@ -252,6 +252,77 @@ st.markdown("""
         margin-top: 5px;
         text-align: center;
         line-height: 1.3;
+    }
+    
+    /* Estilos para a aba de resumo */
+    .resumo-container {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 25px 0;
+        border-left: 5px solid #4CAF50;
+    }
+    .resumo-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .resumo-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin: 20px 0;
+    }
+    .resumo-item {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+    .resumo-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .resumo-value {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #2c3e50;
+    }
+    .resumo-label {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+    }
+    .resumo-balanco {
+        background-color: #e8f5e9;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        text-align: center;
+        border: 2px solid #4CAF50;
+    }
+    .balanco-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+    .balanco-equacao {
+        font-size: 18px;
+        color: #333;
+        margin: 10px 0;
+        line-height: 1.5;
+    }
+    .balanco-total {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin-top: 15px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -490,17 +561,120 @@ if st.session_state.calcular:
             st.markdown('<div class="flow-unit">HTI - Tempo Retenção (h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
-        # Informações adicionais
-        st.markdown("---")
-        col4, col5 = st.columns(2)
-        with col4:
-            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>🏊 Volume Estático:</strong> {formatar_numero(Vol_estatico, 2)} m³</div>', unsafe_allow_html=True)
-        with col5:
-            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>⚖️ Balanço Hídrico:</strong><br>💨 Evaporação ({formatar_numero(evaporacao, 2)} m³/h) +<br>💧 Perda Líquida ({formatar_numero(perda_liquida, 2)} m³/h) =<br>🚰 Reposição ({formatar_numero(reposicao, 2)} m³/h)</div>', unsafe_allow_html=True)
-        
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-diagram
+        
+        # --------------------------------------------------
+        # ABA DE RESUMO (nova seção)
+        # --------------------------------------------------
+        st.markdown("---")
+        st.markdown('<h2 style="text-align: center; color: #2c3e50; margin: 30px 0;">📋 RESUMO DO CÁLCULO</h2>', unsafe_allow_html=True)
+        
+        st.markdown('<div class="resumo-container">', unsafe_allow_html=True)
+        st.markdown('<div class="resumo-title">📊 Dados Principais</div>', unsafe_allow_html=True)
+        
+        # Grid com os principais dados
+        st.markdown('<div class="resumo-grid">', unsafe_allow_html=True)
+        
+        # Linha 1
+        st.markdown(f'''
+        <div class="resumo-item">
+            <div class="resumo-value">💧 {formatar_numero(VZ_rec, 1)}</div>
+            <div class="resumo-label">Vazão de Recirculação</div>
+            <div class="resumo-label">m³/h</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown(f'''
+        <div class="resumo-item">
+            <div class="resumo-value">🌡️ {formatar_numero(delta_T, 2)}</div>
+            <div class="resumo-label">ΔT (Redução de Temperatura)</div>
+            <div class="resumo-label">°C</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Linha 2
+        st.markdown(f'''
+        <div class="resumo-item">
+            <div class="resumo-value">🏊 {formatar_numero(Vol_estatico, 1)}</div>
+            <div class="resumo-label">Volume Estático</div>
+            <div class="resumo-label">m³</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown(f'''
+        <div class="resumo-item">
+            <div class="resumo-value">♻️ {formatar_numero(ciclos, 2)}</div>
+            <div class="resumo-label">Ciclos de Concentração</div>
+            <div class="resumo-label">vezes</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha resumo-grid
+        
+        # Balanço Hídrico
+        st.markdown('<div class="resumo-balanco">', unsafe_allow_html=True)
+        st.markdown('<div class="balanco-title">⚖️ BALANÇO HÍDRICO</div>', unsafe_allow_html=True)
+        
+        st.markdown(f'''
+        <div class="balanco-equacao">
+            💨 Evaporação: <strong>{formatar_numero(evaporacao, 2)} m³/h</strong>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown(f'''
+        <div class="balanco-equacao">
+            💧 Perda Líquida: <strong>{formatar_numero(perda_liquida, 2)} m³/h</strong>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown('<div class="balanco-equacao">+</div>', unsafe_allow_html=True)
+        
+        st.markdown(f'''
+        <div class="balanco-total">
+            🚰 Reposição Total: <strong>{formatar_numero(reposicao, 2)} m³/h</strong>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha resumo-balanco
+        
+        # Detalhes das perdas
+        st.markdown('<div style="margin-top: 25px;">', unsafe_allow_html=True)
+        st.markdown('<div style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; text-align: center;">📉 Detalhamento das Perdas</div>', unsafe_allow_html=True)
+        
+        col_perda1, col_perda2 = st.columns(2)
+        
+        with col_perda1:
+            st.markdown(f'''
+            <div style="background-color: white; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #e0e0e0;">
+                <div style="font-size: 18px; font-weight: bold; color: #FF6B6B; margin-bottom: 5px;">🌪️ {formatar_numero(perda_arraste, 2)} m³/h</div>
+                <div style="font-size: 14px; color: #666;">Perda por Arraste</div>
+                <div style="font-size: 12px; color: #888; margin-top: 5px;">({formatar_numero(perc_arraste, 2)}% da vazão)</div>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        with col_perda2:
+            st.markdown(f'''
+            <div style="background-color: white; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #e0e0e0;">
+                <div style="font-size: 18px; font-weight: bold; color: #4CAF50; margin-bottom: 5px;">⬇️ {formatar_numero(purgas, 2)} m³/h</div>
+                <div style="font-size: 14px; color: #666;">Purga do Sistema</div>
+                <div style="font-size: 12px; color: #888; margin-top: 5px;">(Controle de qualidade)</div>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Informação do HTI
+        st.markdown(f'''
+        <div style="margin-top: 25px; text-align: center; background-color: #e3f2fd; padding: 15px; border-radius: 10px; border: 1px solid #2196F3;">
+            <div style="font-size: 16px; font-weight: bold; color: #1565C0; margin-bottom: 8px;">⏱️ Tempo de Retenção (HTI)</div>
+            <div style="font-size: 20px; color: #0D47A1; font-weight: bold;">{formatar_numero(HTI, 2)} horas</div>
+            <div style="font-size: 14px; color: #555; margin-top: 5px;">Tempo médio que a água permanece no sistema</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha resumo-container
         
         # Botões para ações
         st.markdown("---")
