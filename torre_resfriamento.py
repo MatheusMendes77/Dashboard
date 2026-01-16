@@ -36,25 +36,6 @@ def formatar_numero(valor, casas_decimais=3):
 # CSS para melhorar a aparência
 st.markdown("""
 <style>
-    /* Fundo geral da aplicação */
-    .stApp {
-        background-color: #f5f7fa;
-    }
-    
-    /* Remover margens e paddings que criam espaços brancos */
-    .main .block-container {
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-        max-width: 100%;
-    }
-    
-    /* Remover espaçamento entre elementos */
-    [data-testid="stHorizontalBlock"] {
-        gap: 0rem;
-    }
-    
     .stButton > button {
         width: 100%;
         background-color: #4CAF50;
@@ -75,102 +56,98 @@ st.markdown("""
     .sidebar-header {
         color: #4CAF50;
         font-weight: bold;
-        margin-top: 10px;
+        margin-top: 20px;
         font-size: 16px;
     }
-    
-    /* Instruções sem fundo branco */
     .instruction-box {
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        border-left: 4px solid #4CAF50;
-        background-color: rgba(76, 175, 80, 0.05);
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 5px solid #4CAF50;
     }
-    
-    /* Parâmetros sem fundo branco */
     .param-box {
-        padding: 10px;
-        border-radius: 8px;
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
         text-align: center;
         border: 1px solid #e0e0e0;
-        background-color: rgba(240, 242, 246, 0.7);
-        min-height: 80px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        min-height: 100px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        margin: 5px;
     }
     .param-title {
         font-weight: bold;
         color: #2c3e50;
         margin-bottom: 5px;
-        font-size: 14px;
+        font-size: 16px;
     }
     .param-unit {
         color: #666;
-        font-size: 12px;
-        margin-top: 3px;
+        font-size: 14px;
+        margin-top: 5px;
     }
     .center-container {
         display: flex;
         justify-content: center;
-        margin: 10px 0;
+        margin: 20px 0;
     }
-    
-    /* FLUXO DA TORRE - SEM BARRAS BRANCAS */
-    .flow-diagram {
-        background-color: transparent;
-        padding: 10px 0;
-        margin: 10px 0;
+    .flow-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
     }
-    
     .flow-step {
-        background-color: rgba(255, 255, 255, 0.7);
-        border-radius: 8px;
-        padding: 15px;
-        margin: 8px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border-left: 5px solid;
+        background-color: white;
+        border-radius: 10px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        border-left: 6px solid;
     }
-    
     .flow-title {
         font-weight: bold;
-        margin-bottom: 15px;
-        font-size: 18px;
-        padding-bottom: 8px;
+        margin-bottom: 20px;
+        font-size: 20px;
+        padding-bottom: 10px;
         border-bottom: 2px solid;
         text-align: center;
     }
-    
     .flow-value {
-        font-size: 28px;
+        font-size: 36px;
         font-weight: bold;
-        margin: 10px 0;
+        margin: 15px 0;
         line-height: 1.2;
         text-align: center;
     }
-    
     .flow-unit {
         color: #555;
-        font-size: 14px;
-        margin-top: 5px;
+        font-size: 16px;
+        margin-top: 8px;
         font-weight: 500;
         text-align: center;
     }
-    
     .flow-arrow {
         text-align: center;
-        font-size: 30px;
+        font-size: 40px;
         color: #4CAF50;
-        margin: 8px 0;
+        margin: 15px 0;
         opacity: 0.7;
+    }
+    .flow-diagram {
+        background-color: #f5f9ff;
+        padding: 35px;
+        border-radius: 20px;
+        margin: 30px 0;
+        border: 2px solid #d0e3ff;
     }
     
     /* Cores específicas para cada seção */
     .step-entrada {
         border-left-color: #FF6B6B;
-        background-color: rgba(255, 107, 107, 0.05);
     }
     .step-entrada .flow-title {
         color: #FF6B6B;
@@ -182,7 +159,6 @@ st.markdown("""
     
     .step-resfriamento {
         border-left-color: #4ECDC4;
-        background-color: rgba(78, 205, 196, 0.05);
     }
     .step-resfriamento .flow-title {
         color: #4ECDC4;
@@ -194,7 +170,6 @@ st.markdown("""
     
     .step-perdas {
         border-left-color: #FFD166;
-        background-color: rgba(255, 209, 102, 0.05);
     }
     .step-perdas .flow-title {
         color: #FFD166;
@@ -206,7 +181,6 @@ st.markdown("""
     
     .step-reposicao {
         border-left-color: #06D6A0;
-        background-color: rgba(6, 214, 160, 0.05);
     }
     .step-reposicao .flow-title {
         color: #06D6A0;
@@ -216,7 +190,7 @@ st.markdown("""
         color: #06D6A0;
     }
     
-    /* Centralização dos conteúdos */
+    /* Centralização dos conteúdos dentro das colunas */
     .flow-column-content {
         display: flex;
         flex-direction: column;
@@ -225,38 +199,49 @@ st.markdown("""
         text-align: center;
     }
     
-    /* Descrição adicional */
-    .flow-descricao {
-        font-size: 12px;
-        color: #777;
-        margin-top: 3px;
-        text-align: center;
-        line-height: 1.2;
+    /* Estilos para remover quadros brancos */
+    .st-emotion-cache-1y4p8pa {
+        padding: 0;
+    }
+    .st-emotion-cache-1y4p8pa > div {
+        padding: 0;
     }
     
-    /* SEÇÃO RESUMO - SEM BARRAS BRANCAS */
+    /* Estilo para descrição adicional */
+    .flow-descricao {
+        font-size: 14px;
+        color: #777;
+        margin-top: 5px;
+        text-align: center;
+        line-height: 1.3;
+    }
+    
+    /* Seção de Resumo */
     .resumo-section {
-        background-color: transparent;
-        padding: 15px 0;
-        margin: 15px 0;
+        background-color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px 0;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        border-top: 5px solid #4CAF50;
     }
     
     .resumo-header {
         text-align: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #4CAF50;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #4CAF50;
     }
     
     .resumo-title {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: bold;
         color: #2c3e50;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
     
     .resumo-subtitle {
-        font-size: 16px;
+        font-size: 18px;
         color: #666;
         font-weight: 500;
     }
@@ -265,90 +250,108 @@ st.markdown("""
     .dados-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 10px 0;
-        font-size: 14px;
-        background-color: transparent;
+        margin: 20px 0;
+        font-size: 16px;
     }
     
     .dados-table th {
         background-color: #2c3e50;
         color: white;
-        padding: 10px;
+        padding: 15px;
         text-align: left;
         font-weight: bold;
+        font-size: 16px;
     }
     
     .dados-table td {
-        padding: 10px;
+        padding: 15px;
         border-bottom: 1px solid #e0e0e0;
         vertical-align: top;
-        background-color: rgba(255, 255, 255, 0.7);
     }
     
-    .dados-table tr:hover td {
-        background-color: rgba(240, 242, 246, 0.8);
+    .dados-table tr:hover {
+        background-color: #f8f9fa;
     }
     
     .valor-cell {
         text-align: right;
         font-weight: bold;
         color: #2c3e50;
+        font-size: 17px;
         white-space: nowrap;
     }
     
     .unidade-cell {
         text-align: center;
         color: #666;
+        font-size: 15px;
         white-space: nowrap;
-        width: 80px;
+        width: 120px;
     }
     
-    /* Cards de informação */
+    /* Grid para informações adicionais */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin: 25px 0;
+    }
+    
     .info-card {
-        background-color: rgba(255, 255, 255, 0.7);
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
         border-left: 4px solid;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
     .info-card-title {
-        font-size: 16px;
+        font-size: 18px;
         font-weight: bold;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         color: #2c3e50;
     }
     
-    /* Balanço hídrico */
+    .info-card-value {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .info-card-desc {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    /* Balanço hídrico destacado */
     .balanco-container {
-        background-color: rgba(232, 245, 233, 0.7);
-        padding: 20px;
-        border-radius: 8px;
-        margin: 15px 0;
+        background-color: #e8f5e9;
+        padding: 25px;
+        border-radius: 12px;
+        margin: 25px 0;
         border: 2px solid #4CAF50;
     }
     
     .balanco-title {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: bold;
         color: #2c3e50;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         text-align: center;
     }
     
     .balanco-equacao {
-        font-size: 16px;
+        font-size: 18px;
         text-align: center;
-        margin: 8px 0;
-        line-height: 1.6;
+        margin: 10px 0;
+        line-height: 1.8;
     }
     
     .balanco-total {
-        font-size: 20px;
+        font-size: 22px;
         font-weight: bold;
         color: #4CAF50;
-        margin-top: 10px;
+        margin-top: 15px;
         text-align: center;
     }
     
@@ -363,48 +366,6 @@ st.markdown("""
     
     .secao-perdas {
         border-left-color: #FFD166;
-    }
-    
-    /* Remover barras brancas dos separadores do Streamlit */
-    hr {
-        margin: 5px 0;
-        border: none;
-        height: 1px;
-        background-color: rgba(0,0,0,0.1);
-    }
-    
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background-color: #f8f9fa;
-    }
-    
-    section[data-testid="stSidebar"] > div {
-        padding: 15px;
-    }
-    
-    /* Ajustar widgets */
-    .stNumberInput, .stSelectbox {
-        background-color: white;
-        border-radius: 4px;
-        padding: 2px;
-    }
-    
-    /* Remover espaços em branco extras */
-    div[data-testid="column"] {
-        padding: 0px;
-    }
-    
-    /* Títulos principais sem fundo */
-    h1, h2, h3 {
-        background-color: transparent !important;
-        padding: 5px 0 !important;
-        margin: 5px 0 !important;
-    }
-    
-    /* Remover qualquer padding/margin que crie espaços brancos */
-    .element-container {
-        padding: 0 !important;
-        margin: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -542,7 +503,7 @@ if st.session_state.calcular:
         # --------------------------------------------------
         # SEÇÃO 1: FLUXO DA TORRE
         # --------------------------------------------------
-        st.markdown('<h2 style="text-align: center; color: #1f77b4; margin: 10px 0; font-size: 28px;">📊 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align: center; color: #1f77b4; margin: 30px 0 20px 0; font-size: 32px;">📊 FLUXO DA TORRE DE RESFRIAMENTO</h2>', unsafe_allow_html=True)
         
         # Diagrama do Fluxo da Torre
         st.markdown('<div class="flow-diagram">', unsafe_allow_html=True)
@@ -651,9 +612,9 @@ if st.session_state.calcular:
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-diagram
         
         # --------------------------------------------------
-        # SEÇÃO 2: RESUMO
+        # SEÇÃO 2: RESUMO COMPACTO
         # --------------------------------------------------
-        st.markdown('<hr style="margin: 15px 0;">', unsafe_allow_html=True)
+        st.markdown("---")
         
         st.markdown('<div class="resumo-section">', unsafe_allow_html=True)
         
@@ -727,7 +688,7 @@ if st.session_state.calcular:
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Tabela 2: Resultados do Cálculo
-        st.markdown('<div class="info-card secao-resultados" style="margin-top: 15px;">', unsafe_allow_html=True)
+        st.markdown('<div class="info-card secao-resultados" style="margin-top: 25px;">', unsafe_allow_html=True)
         st.markdown('<div class="info-card-title">📈 RESULTADOS DO CÁLCULO</div>', unsafe_allow_html=True)
         
         dados_resultados = pd.DataFrame({
@@ -784,7 +745,7 @@ if st.session_state.calcular:
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Tabela 3: Detalhamento das Perdas
-        st.markdown('<div class="info-card secao-perdas" style="margin-top: 15px;">', unsafe_allow_html=True)
+        st.markdown('<div class="info-card secao-perdas" style="margin-top: 25px;">', unsafe_allow_html=True)
         st.markdown('<div class="info-card-title">📉 DETALHAMENTO DAS PERDAS</div>', unsafe_allow_html=True)
         
         dados_perdas = pd.DataFrame({
@@ -829,7 +790,7 @@ if st.session_state.calcular:
                     <td>{row['Tipo de Perda']}</td>
                     <td class="valor-cell">{row['Valor']}</td>
                     <td class="unidade-cell">{row['Unidade']}</td>
-                    <td style="font-size: 12px; color: #666;">{row['Observação']}</td>
+                    <td style="font-size: 14px; color: #666;">{row['Observação']}</td>
                 </tr>
             """
         
@@ -842,7 +803,7 @@ if st.session_state.calcular:
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Balanço Hídrico Destacado
-        st.markdown('<div class="balanco-container" style="margin-top: 20px;">', unsafe_allow_html=True)
+        st.markdown('<div class="balanco-container" style="margin-top: 30px;">', unsafe_allow_html=True)
         st.markdown('<div class="balanco-title">⚖️ BALANÇO HÍDRICO</div>', unsafe_allow_html=True)
         
         st.markdown(f'''
@@ -857,7 +818,7 @@ if st.session_state.calcular:
         </div>
         ''', unsafe_allow_html=True)
         
-        st.markdown('<div class="balanco-equacao" style="font-size: 20px; margin: 10px 0;">+</div>', unsafe_allow_html=True)
+        st.markdown('<div class="balanco-equacao" style="font-size: 24px; margin: 15px 0;">+</div>', unsafe_allow_html=True)
         
         st.markdown(f'''
         <div class="balanco-total">
@@ -872,7 +833,7 @@ if st.session_state.calcular:
         # --------------------------------------------------
         # BOTÕES DE AÇÃO
         # --------------------------------------------------
-        st.markdown('<hr style="margin: 15px 0;">', unsafe_allow_html=True)
+        st.markdown("---")
         col_b1, col_b2, col_b3 = st.columns(3)
         
         with col_b1:
@@ -934,10 +895,10 @@ if st.session_state.calcular:
             taxa_reposicao = (reposicao / VZ_rec * 100) if VZ_rec > 0 else 0
             
             st.markdown(f'''
-            <div style="text-align: center; padding: 8px; background-color: rgba(248, 249, 250, 0.7); border-radius: 6px;">
-                <div style="font-size: 12px; color: #666;">Taxa de Evaporação</div>
-                <div style="font-size: 16px; font-weight: bold; color: #4CAF50;">{formatar_numero(taxa_evaporacao, 2)}%</div>
-                <div style="font-size: 11px; color: #888;">da vazão de recirculação</div>
+            <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px;">
+                <div style="font-size: 14px; color: #666;">Taxa de Evaporação</div>
+                <div style="font-size: 18px; font-weight: bold; color: #4CAF50;">{formatar_numero(taxa_evaporacao, 2)}%</div>
+                <div style="font-size: 12px; color: #888;">da vazão de recirculação</div>
             </div>
             ''', unsafe_allow_html=True)
         
@@ -1007,9 +968,9 @@ else:
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown('<hr style="margin: 15px 0;">', unsafe_allow_html=True)
+    st.markdown("---")
     st.info("⚡ **Clique no botão CALCULAR na barra lateral para visualizar o fluxo da torre**")
 
 # Rodapé
-st.markdown('<hr style="margin: 15px 0;">', unsafe_allow_html=True)
-st.markdown("<div style='text-align: center; color: #666; padding: 10px; font-size: 12px;'>🏭 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
+st.markdown("---")
+st.markdown("<div style='text-align: center; color: #666; padding: 20px; font-size: 14px;'>🏭 Calculadora de Torre de Resfriamento • Diagrama de Fluxo • Versão 2.0</div>", unsafe_allow_html=True)
