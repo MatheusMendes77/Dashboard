@@ -66,18 +66,6 @@ st.markdown("""
         margin: 0 0 20px 0 !important;
         border-left: 5px solid #4CAF50;
     }
-    .param-box {
-        background-color: white;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        min-height: 100px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
     .param-title {
         font-weight: bold;
         color: #2c3e50;
