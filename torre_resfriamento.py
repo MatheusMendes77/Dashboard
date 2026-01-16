@@ -149,10 +149,8 @@ st.markdown("""
         margin: 0 !important;
         padding: 2px 0;
         opacity: 0.7;
-        background-color: #RRGGBBAA;
     }
     .flow-diagram {
-        background-color: #RRGGBBAA;
         padding: 0 !important;
         border-radius: 20px;
         margin: 0 !important;
