@@ -268,11 +268,11 @@ with st.sidebar:
     st.header("⚙️ Parâmetros de Entrada")
     
     st.markdown('<div class="sidebar-header">Dados Básicos</div>', unsafe_allow_html=True)
-    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=None, step=50.0, format="%.2f", placeholder="Ex: 1.000,00")
-    Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=None, step=5.0, format="%.2f", placeholder="Ex: 50,00")
+    VZ_rec = st.number_input("Vazão de Recirculação (m³/h)", min_value=0.0, value=None, step=50.0, format="%.1f", placeholder="Ex: 1.000,0")
+    Vol_estatico = st.number_input("Volume Estático (m³)", min_value=0.0, value=None, step=5.0, format="%.1f", placeholder="Ex: 50,0")
     T_retorno = st.number_input("Temperatura de Retorno (°C)", min_value=0.0, value=None, step=1.0, format="%.1f", placeholder="Ex: 40,0")
     T_bacia = st.number_input("Temperatura de Bacia (°C)", min_value=0.0, value=None, step=1.0, format="%.1f", placeholder="Ex: 30,0")
-    perc_arraste = st.number_input("% Arraste", min_value=0.0, max_value=100.0, value=None, step=0.01, format="%.4f", placeholder="Ex: 0,1000")
+    perc_arraste = st.number_input("% Arraste", min_value=0.0, max_value=100.0, value=None, step=0.01, format="%.2f", placeholder="Ex: 0,10")
     perc_utilizacao = st.number_input("% Utilização", min_value=0.0, max_value=100.0, value=100.0, step=5.0, format="%.1f")
     
     st.markdown("---")
@@ -297,9 +297,9 @@ with st.sidebar:
                 value=dados["torre"],
                 step=10.0 if "ppm" in dados["unidade"] else 0.1,
                 key=f"torre_{param}",
-                format="%.2f",
+                format="%.1f",
                 help=f"{param} na torre ({dados['unidade']})",
-                placeholder="Ex: 150,00"
+                placeholder="Ex: 150,0"
             )
         with col2:
             repos_val = st.number_input(
@@ -308,9 +308,9 @@ with st.sidebar:
                 value=dados["reposicao"],
                 step=5.0 if "ppm" in dados["unidade"] else 0.1,
                 key=f"repos_{param}",
-                format="%.2f",
+                format="%.1f",
                 help=f"{param} na reposição ({dados['unidade']})",
-                placeholder="Ex: 50,00"
+                placeholder="Ex: 50,0"
             )
         
         if repos_val is not None and repos_val > 0 and torre_val is not None:
@@ -421,7 +421,7 @@ if st.session_state.calcular:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">📉 {formatar_numero(delta_T, 2)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">🌡️ {formatar_numero(delta_T, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">ΔT (Redução de Temperatura) (°C)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col2:
@@ -460,7 +460,7 @@ if st.session_state.calcular:
         
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">🔄 {formatar_numero(purgas, 3)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">⬇️ {formatar_numero(purgas, 3)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Purga do Sistema (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
@@ -496,7 +496,7 @@ if st.session_state.calcular:
         with col4:
             st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>🏊 Volume Estático:</strong> {formatar_numero(Vol_estatico, 2)} m³</div>', unsafe_allow_html=True)
         with col5:
-            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>⚖️ Balanço Hídrico:</strong><br>💨 Evaporação ({formatar_numero(evaporacao, 3)} m³/h) +<br>💧 Perda Líquida ({formatar_numero(perda_liquida, 3)} m³/h) =<br>🚰 Reposição ({formatar_numero(reposicao, 3)} m³/h)</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color: #555; font-size: 16px; text-align: center;"><strong>⚖️ Balanço Hídrico:</strong><br>💨 Evaporação ({formatar_numero(evaporacao, 2)} m³/h) +<br>💧 Perda Líquida ({formatar_numero(perda_liquida, 2)} m³/h) =<br>🚰 Reposição ({formatar_numero(reposicao, 2)} m³/h)</div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
         
