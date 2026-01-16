@@ -142,6 +142,15 @@ st.markdown("""
         font-weight: 500;
         text-align: center;
     }
+        .flow-arrow {
+        text-align: center;
+        font-size: 40px;
+        color: #4CAF50;
+        margin: 0 !important;
+        padding: 2px 0;
+        opacity: 0.7;
+        background-color: #f5f9ff;
+    }
     .flow-diagram {
         background-color: #f5f9ff;
         padding: 0 !important;
