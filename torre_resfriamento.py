@@ -691,7 +691,7 @@ if st.session_state.calcular:
                 "m³/h",
                 "m³",
                 "°C",
-                "°C",
+                "°C",  # Corrigido aqui
                 "%",
                 "%",
                 "vezes"
