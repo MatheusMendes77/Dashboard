@@ -66,7 +66,7 @@ st.markdown("""
         margin: 0 0 20px 0 !important;
         border-left: 5px solid #4CAF50;
     }
-        .param-box {
+    .param-box {
         background-color: white;
         padding: 15px;
         border-radius: 10px;
@@ -142,15 +142,17 @@ st.markdown("""
         font-weight: 500;
         text-align: center;
     }
-        .flow-arrow {
+    .flow-arrow {
         text-align: center;
         font-size: 40px;
         color: #4CAF50;
         margin: 0 !important;
         padding: 2px 0;
         opacity: 0.7;
+        background-color: #f5f9ff;
     }
     .flow-diagram {
+        background-color: #f5f9ff;
         padding: 0 !important;
         border-radius: 20px;
         margin: 0 !important;
@@ -261,12 +263,16 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Tabelas de resumo */
+    /* Tabelas de resumo - ESTILO ORIGINAL MAS COM CORREÇÕES */
     .dados-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 20px 0;
+        margin: 0 !important;  /* REMOVIDA MARGEM */
         font-size: 16px;
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     
     .dados-table th {
@@ -281,7 +287,7 @@ st.markdown("""
     .dados-table td {
         padding: 15px;
         border-bottom: 1px solid #e0e0e0;
-        vertical-align: top;
+        vertical-align: middle;
     }
     
     .dados-table tr:hover {
@@ -304,16 +310,28 @@ st.markdown("""
         width: 120px;
     }
     
+    .observacao-cell {
+        font-size: 14px;
+        color: #666;
+        font-style: italic;
+    }
+    
+    /* Ajustes específicos para os cards de informação - CORRIGIDO */
+    .info-card {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid;
+        margin: 0 !important;
+    }
     
     .info-card-title {
         font-size: 18px;
         font-weight: bold;
-        margin-bottom: 10px;
+        margin: 0 0 15px 0 !important;  /* CORRIGIDO: margem superior ZERO */
+        padding: 0 0 10px 0 !important; /* CORRIGIDO: padding superior ZERO */
         color: #2c3e50;
-        padding-bottom: 10px;
         border-bottom: 2px solid;
-        margin-top: 0 !important;
-        padding-top: 0 !important;
     }
     
     /* Ajustar o espaçamento entre os cards */
@@ -321,34 +339,15 @@ st.markdown("""
         margin-top: 25px !important;
     }
     
-    /* Remover margens extras dos dataframes */
-    .stDataFrame {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    div[data-testid="stDataFrame"] {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    /* Ajustar container dos dataframes */
-    .st-emotion-cache-1jicfl2 {
-        padding: 0 !important;
-    }
-    
-    /* Remover espaçamento dos headings dentro dos cards */
-    .info-card h3,
-    .info-card h4,
-    .info-card h5 {
+    /* REMOVER ESPAÇAMENTO de TODOS os elementos dentro do info-card */
+    .info-card > div:first-child {
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
     
-    /* Ajustar o container principal para remover espaçamento */
-    .main .block-container {
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
+    /* Remover margens extras de todos os elementos */
+    .info-card * {
+        margin-top: 0 !important;
     }
     
     /* Balanço hídrico destacado */
@@ -414,19 +413,48 @@ st.markdown("""
         background-color: #e0e0e0;
     }
     
-    /* Estilo adicional para remover TODOS os espaçamentos indesejados */
-    div[data-testid="stVerticalBlock"] > div > div > div > .info-card {
+    .main .block-container {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* REGRAS ESPECÍFICAS PARA REMOVER BARRAS BRANCAS */
+    /* Remover espaçamento do Streamlit */
+    .stMarkdown {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Container das tabelas */
+    .stMarkdown > div {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Garantir que não haja espaçamento entre elementos */
+    .info-card .stMarkdown:first-child {
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
     
-    .stMarkdown {
-        margin-bottom: 0 !important;
+    /* Seletores mais específicos para garantir */
+    div[data-testid="stVerticalBlock"] > div > div > .info-card {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     
-    /* Remover espaçamento entre elementos markdown */
-    .stMarkdown + .stMarkdown {
-        margin-top: -10px !important;
+    /* Remover qualquer espaçamento residual */
+    .info-card > :first-child {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Garantir que o título não tenha margem superior */
+    .info-card .info-card-title {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -673,7 +701,7 @@ if st.session_state.calcular:
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-diagram
         
         # --------------------------------------------------
-        # SEÇÃO 2: RESUMO COMPACTO
+        # SEÇÃO 2: RESUMO COMPACTO - COM TABELAS HTML ESTILIZADAS
         # --------------------------------------------------
         st.markdown('<div style="height: 30px;"></div>', unsafe_allow_html=True)
         
@@ -685,53 +713,144 @@ if st.session_state.calcular:
         st.markdown('<div class="resumo-subtitle">Dados principais e balanço hídrico</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Tabela 1: Dados de Entrada - USANDO MARKDOWN SIMPLES
+        # Tabela 1: Dados de Entrada - TABELA HTML ESTILIZADA
         st.markdown('<div class="info-card secao-dados">', unsafe_allow_html=True)
-        st.markdown('<div class="info-card-title" style="margin-top: 0; padding-top: 0;">📥 DADOS DE ENTRADA</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-card-title">📥 DADOS DE ENTRADA</div>', unsafe_allow_html=True)
         
-        # Criar tabela com markdown simples
-        tabela_entrada = f"""
-| Parâmetro | Valor | Unidade |
-|---|---|---|
-| **Vazão de Recirculação** | {formatar_numero(VZ_rec, 1)} | m³/h |
-| **Volume Estático** | {formatar_numero(Vol_estatico, 1)} | m³ |
-| **Temperatura de Retorno** | {formatar_numero(T_retorno, 1)} | °C |
-| **Temperatura da Bacia** | {formatar_numero(T_bacia, 1)} | °C |
-| **% Arraste** | {formatar_numero(perc_arraste, 2)} | % |
-| **% Utilização** | {formatar_numero(perc_utilizacao, 1)} | % |
-| **Ciclos de Concentração** | {formatar_numero(ciclos, 2)} | vezes |
-"""
-        st.markdown(tabela_entrada, unsafe_allow_html=True)
+        # Tabela HTML estilizada
+        tabela_entrada_html = f"""
+        <table class="dados-table">
+            <thead>
+                <tr>
+                    <th>Parâmetro</th>
+                    <th style="text-align: center;">Valor</th>
+                    <th style="text-align: center;">Unidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Vazão de Recirculação</td>
+                    <td class="valor-cell">{formatar_numero(VZ_rec, 1)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                </tr>
+                <tr>
+                    <td>Volume Estático</td>
+                    <td class="valor-cell">{formatar_numero(Vol_estatico, 1)}</td>
+                    <td class="unidade-cell">m³</td>
+                </tr>
+                <tr>
+                    <td>Temperatura de Retorno</td>
+                    <td class="valor-cell">{formatar_numero(T_retorno, 1)}</td>
+                    <td class="unidade-cell">°C</td>
+                </tr>
+                <tr>
+                    <td>Temperatura da Bacia</td>
+                    <td class="valor-cell">{formatar_numero(T_bacia, 1)}</td>
+                    <td class="unidade-cell">°C</td>
+                </tr>
+                <tr>
+                    <td>% Arraste</td>
+                    <td class="valor-cell">{formatar_numero(perc_arraste, 2)}</td>
+                    <td class="unidade-cell">%</td>
+                </tr>
+                <tr>
+                    <td>% Utilização</td>
+                    <td class="valor-cell">{formatar_numero(perc_utilizacao, 1)}</td>
+                    <td class="unidade-cell">%</td>
+                </tr>
+                <tr>
+                    <td>Ciclos de Concentração</td>
+                    <td class="valor-cell">{formatar_numero(ciclos, 2)}</td>
+                    <td class="unidade-cell">vezes</td>
+                </tr>
+            </tbody>
+        </table>
+        """
+        st.markdown(tabela_entrada_html, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Tabela 2: Resultados do Cálculo - USANDO MARKDOWN SIMPLES
+        # Tabela 2: Resultados do Cálculo - TABELA HTML ESTILIZADA
         st.markdown('<div class="info-card secao-resultados">', unsafe_allow_html=True)
-        st.markdown('<div class="info-card-title" style="margin-top: 0; padding-top: 0;">📈 RESULTADOS DO CÁLCULO</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-card-title">📈 RESULTADOS DO CÁLCULO</div>', unsafe_allow_html=True)
         
-        tabela_resultados = f"""
-| Parâmetro | Valor | Unidade |
-|---|---|---|
-| **ΔT (Redução de Temperatura)** | {formatar_numero(delta_T, 2)} | °C |
-| **Evaporação** | {formatar_numero(evaporacao, 2)} | m³/h |
-| **Perda Líquida Total** | {formatar_numero(perda_liquida, 2)} | m³/h |
-| **Reposição Total** | {formatar_numero(reposicao, 2)} | m³/h |
-| **HTI (Tempo de Retenção)** | {formatar_numero(HTI, 2)} | horas |
-"""
-        st.markdown(tabela_resultados, unsafe_allow_html=True)
+        tabela_resultados_html = f"""
+        <table class="dados-table">
+            <thead>
+                <tr>
+                    <th>Parâmetro</th>
+                    <th style="text-align: center;">Valor</th>
+                    <th style="text-align: center;">Unidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ΔT (Redução de Temperatura)</td>
+                    <td class="valor-cell">{formatar_numero(delta_T, 2)}</td>
+                    <td class="unidade-cell">°C</td>
+                </tr>
+                <tr>
+                    <td>Evaporação</td>
+                    <td class="valor-cell">{formatar_numero(evaporacao, 2)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                </tr>
+                <tr>
+                    <td>Perda Líquida Total</td>
+                    <td class="valor-cell">{formatar_numero(perda_liquida, 2)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                </tr>
+                <tr>
+                    <td>Reposição Total</td>
+                    <td class="valor-cell">{formatar_numero(reposicao, 2)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                </tr>
+                <tr>
+                    <td>HTI (Tempo de Retenção)</td>
+                    <td class="valor-cell">{formatar_numero(HTI, 2)}</td>
+                    <td class="unidade-cell">horas</td>
+                </tr>
+            </tbody>
+        </table>
+        """
+        st.markdown(tabela_resultados_html, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Tabela 3: Detalhamento das Perdas - USANDO MARKDOWN SIMPLES
+        # Tabela 3: Detalhamento das Perdas - TABELA HTML ESTILIZADA
         st.markdown('<div class="info-card secao-perdas">', unsafe_allow_html=True)
-        st.markdown('<div class="info-card-title" style="margin-top: 0; padding-top: 0;">📉 DETALHAMENTO DAS PERDAS</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-card-title">📉 DETALHAMENTO DAS PERDAS</div>', unsafe_allow_html=True)
         
-        tabela_perdas = f"""
-| Tipo de Perda | Valor | Unidade | Observação |
-|---|---|---|---|
-| **Perda por Arraste** | {formatar_numero(perda_arraste, 2)} | m³/h | ({formatar_numero(perc_arraste, 2)}% da vazão de recirculação) |
-| **Purga do Sistema** | {formatar_numero(purgas, 2)} | m³/h | (Controle de qualidade da água) |
-| **Perda Líquida Total** | {formatar_numero(perda_liquida, 2)} | m³/h | (Soma: Arraste + Purga) |
-"""
-        st.markdown(tabela_perdas, unsafe_allow_html=True)
+        tabela_perdas_html = f"""
+        <table class="dados-table">
+            <thead>
+                <tr>
+                    <th>Tipo de Perda</th>
+                    <th style="text-align: center;">Valor</th>
+                    <th style="text-align: center;">Unidade</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Perda por Arraste</td>
+                    <td class="valor-cell">{formatar_numero(perda_arraste, 2)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                    <td class="observacao-cell">({formatar_numero(perc_arraste, 2)}% da vazão de recirculação)</td>
+                </tr>
+                <tr>
+                    <td>Purga do Sistema</td>
+                    <td class="valor-cell">{formatar_numero(purgas, 2)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                    <td class="observacao-cell">(Controle de qualidade da água)</td>
+                </tr>
+                <tr>
+                    <td>Perda Líquida Total</td>
+                    <td class="valor-cell">{formatar_numero(perda_liquida, 2)}</td>
+                    <td class="unidade-cell">m³/h</td>
+                    <td class="observacao-cell">(Soma: Arraste + Purga)</td>
+                </tr>
+            </tbody>
+        </table>
+        """
+        st.markdown(tabela_perdas_html, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Balanço Hídrico Destacado
