@@ -197,7 +197,7 @@ st.markdown("""
         color: #FFD166;
     }
     
-    .step-reposicao {
+    .step-sicao {
         border-left-color: #06D6A0;
     }
     .step-reposicao .flow-title {
@@ -453,14 +453,14 @@ if st.session_state.calcular:
         
         with col2:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">🌪️ {formatar_numero(perda_arraste, 3)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">🌪️ {formatar_numero(perda_arraste, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Perda por Arraste (m³/h)</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-descricao">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-descricao">({formatar_numero(perc_arraste, 2)}% do recirculado)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col3:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">⬇️ {formatar_numero(purgas, 3)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">⬇️ {formatar_numero(purgas, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Purga do Sistema (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
@@ -476,7 +476,7 @@ if st.session_state.calcular:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">🚰 {formatar_numero(reposicao, 3)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">🚰 {formatar_numero(reposicao, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Reposição Total (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         with col2:
