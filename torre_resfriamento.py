@@ -538,7 +538,7 @@ if st.session_state.calcular:
                     formatar_numero(perc_utilizacao, 1),
                     formatar_numero(ciclos, 2),
                     formatar_numero(delta_T, 1),
-                    formatar_numero(evaporacao, 2),
+                    formatar_numero(evaporacao, 1),
                     formatar_numero(perda_liquida, 2),
                     formatar_numero(HTI, 1),
                     formatar_numero(perda_arraste, 2),
