@@ -530,20 +530,20 @@ if st.session_state.calcular:
                     "Reposição (m³/h)"
                 ],
                 "Valor": [
-                    formatar_numero(VZ_rec, 2),
-                    formatar_numero(Vol_estatico, 2),
+                    formatar_numero(VZ_rec, 1),
+                    formatar_numero(Vol_estatico, 1),
                     formatar_numero(T_retorno, 1),
                     formatar_numero(T_bacia, 1),
-                    formatar_numero(perc_arraste, 4),
+                    formatar_numero(perc_arraste, 2),
                     formatar_numero(perc_utilizacao, 1),
                     formatar_numero(ciclos, 2),
-                    formatar_numero(delta_T, 2),
-                    formatar_numero(evaporacao, 3),
-                    formatar_numero(perda_liquida, 3),
-                    formatar_numero(HTI, 2),
-                    formatar_numero(perda_arraste, 3),
-                    formatar_numero(purgas, 3),
-                    formatar_numero(reposicao, 3)
+                    formatar_numero(delta_T, 1),
+                    formatar_numero(evaporacao, 2),
+                    formatar_numero(perda_liquida, 2),
+                    formatar_numero(HTI, 1),
+                    formatar_numero(perda_arraste, 2),
+                    formatar_numero(purgas, 2),
+                    formatar_numero(reposicao, 2)
                 ]
             }
             
