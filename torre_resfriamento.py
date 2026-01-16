@@ -36,6 +36,18 @@ def formatar_numero(valor, casas_decimais=3):
 # CSS para melhorar a aparência
 st.markdown("""
 <style>
+    .stButton > button {
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
     .stButton > button:hover {
         background-color: #45a049;
         transform: translateY(-2px);
