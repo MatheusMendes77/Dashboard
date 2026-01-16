@@ -447,7 +447,7 @@ if st.session_state.calcular:
         
         with col1:
             st.markdown('<div class="flow-column-content">', unsafe_allow_html=True)
-            st.markdown(f'<div class="flow-value">💧 {formatar_numero(perda_liquida, 3)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="flow-value">💧 {formatar_numero(perda_liquida, 2)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="flow-unit">Perda Líquida Total (m³/h)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
