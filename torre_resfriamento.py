@@ -244,6 +244,50 @@ st.markdown("""
     .st-emotion-cache-1y4p8pa > div {
         padding: 0;
     }
+    
+    /* Estilo específico para PERDAS E CONTROLE - 3 itens lado a lado */
+    .perdas-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin: 20px 0;
+        padding: 20px 0;
+    }
+    
+    .perda-item {
+        flex: 1;
+        text-align: center;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .perda-valor {
+        font-size: 32px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    
+    .perda-titulo {
+        font-size: 16px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 4px;
+    }
+    
+    .perda-descricao {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+        line-height: 1.3;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -430,33 +474,39 @@ if st.session_state.calcular:
         # Seta para baixo
         st.markdown('<div class="flow-arrow">⬇️</div>', unsafe_allow_html=True)
         
-        # Seção 3: Perdas e Purga
+        # Seção 3: Perdas e Purga - AGORA COM OS 3 VALORES LADO A LADO
         st.markdown('<div class="flow-step step-perdas">', unsafe_allow_html=True)
         st.markdown('<div class="flow-title">💧 PERDAS E CONTROLE</div>', unsafe_allow_html=True)
         
-        # Grid com as perdas
-        st.markdown('<div class="flow-grid">', unsafe_allow_html=True)
+        # Container com os 3 itens lado a lado
+        st.markdown('<div class="perdas-container">', unsafe_allow_html=True)
         
-        # Perda Líquida Total
-        st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
-        st.markdown(f'<div class="flow-value">💧 {formatar_numero(perda_liquida, 3)}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="flow-unit">Perda Líquida Total</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Item 1: Perda Líquida Total
+        st.markdown('''
+        <div class="perda-item">
+            <div class="perda-valor">''' + formatar_numero(perda_liquida, 3) + '''</div>
+            <div class="perda-titulo">Perda Líquida Total</div>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        # Perda por Arraste
-        st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
-        st.markdown(f'<div class="flow-value">🌪️ {formatar_numero(perda_arraste, 3)}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="flow-unit">Perda por Arraste</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="font-size: 14px; color: #777; margin-top: 5px; text-align: center;">({formatar_numero(perc_arraste, 4)}% do recirculado)</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Item 2: Perda por Arraste
+        st.markdown('''
+        <div class="perda-item">
+            <div class="perda-valor">''' + formatar_numero(perda_arraste, 3) + '''</div>
+            <div class="perda-titulo">Perda por Arraste</div>
+            <div class="perda-descricao">(''' + formatar_numero(perc_arraste, 4) + '''% do recirculado)</div>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        # Purga do Sistema
-        st.markdown('<div class="flow-grid-item">', unsafe_allow_html=True)
-        st.markdown(f'<div class="flow-value">🔄 {formatar_numero(purgas, 3)}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="flow-unit">Purga do Sistema</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Item 3: Purga do Sistema
+        st.markdown('''
+        <div class="perda-item">
+            <div class="perda-valor">''' + formatar_numero(purgas, 3) + '''</div>
+            <div class="perda-titulo">Purga do Sistema</div>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-grid
+        st.markdown('</div>', unsafe_allow_html=True)  # Fecha perdas-container
         
         st.markdown('</div>', unsafe_allow_html=True)  # Fecha flow-step
         
