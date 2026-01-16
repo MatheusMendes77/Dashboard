@@ -306,19 +306,13 @@ st.markdown("""
         width: 120px;
     }
     
-    /* Grid para informações adicionais */
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin: 25px 0;
-    }
-    
+    /* Ajustes específicos para os cards de informação */
     .info-card {
         background-color: #f8f9fa;
         padding: 20px;
         border-radius: 10px;
         border-left: 4px solid;
+        margin: 0 !important;
     }
     
     .info-card-title {
@@ -326,18 +320,45 @@ st.markdown("""
         font-weight: bold;
         margin-bottom: 10px;
         color: #2c3e50;
+        padding-bottom: 10px;
+        border-bottom: 2px solid;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     
-    .info-card-value {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 10px 0;
+    /* Ajustar o espaçamento entre os cards */
+    .info-card + .info-card {
+        margin-top: 25px !important;
     }
     
-    .info-card-desc {
-        font-size: 14px;
-        color: #666;
-        margin-top: 5px;
+    /* Remover margens extras dos dataframes */
+    .stDataFrame {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    div[data-testid="stDataFrame"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Ajustar container dos dataframes */
+    .st-emotion-cache-1jicfl2 {
+        padding: 0 !important;
+    }
+    
+    /* Remover espaçamento dos headings dentro dos cards */
+    .info-card h3,
+    .info-card h4,
+    .info-card h5 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Ajustar o container principal para remover espaçamento */
+    .main .block-container {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
     
     /* Balanço hídrico destacado */
@@ -345,7 +366,7 @@ st.markdown("""
         background-color: #e8f5e9;
         padding: 25px;
         border-radius: 12px;
-        margin: 25px 0;
+        margin: 25px 0 0 0 !important;
         border: 2px solid #4CAF50;
     }
     
@@ -403,9 +424,19 @@ st.markdown("""
         background-color: #e0e0e0;
     }
     
-    .main .block-container {
+    /* Estilo adicional para remover TODOS os espaçamentos indesejados */
+    div[data-testid="stVerticalBlock"] > div > div > div > .info-card {
+        margin-top: 0 !important;
         padding-top: 0 !important;
-        padding-bottom: 0 !important;
+    }
+    
+    .stMarkdown {
+        margin-bottom: 0 !important;
+    }
+    
+    /* Remover espaçamento entre elementos markdown */
+    .stMarkdown + .stMarkdown {
+        margin-top: -10px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -664,165 +695,53 @@ if st.session_state.calcular:
         st.markdown('<div class="resumo-subtitle">Dados principais e balanço hídrico</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Tabela 1: Dados de Entrada
+        # Tabela 1: Dados de Entrada - USANDO MARKDOWN SIMPLES
         st.markdown('<div class="info-card secao-dados">', unsafe_allow_html=True)
-        st.markdown('<div class="info-card-title">📥 DADOS DE ENTRADA</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-card-title" style="margin-top: 0; padding-top: 0;">📥 DADOS DE ENTRADA</div>', unsafe_allow_html=True)
         
-        # Usar st.table ou st.dataframe em vez de HTML
-        dados_entrada = pd.DataFrame({
-            "Parâmetro": [
-                "Vazão de Recirculação",
-                "Volume Estático", 
-                "Temperatura de Retorno",
-                "Temperatura da Bacia",
-                "% Arraste",
-                "% Utilização",
-                "Ciclos de Concentração"
-            ],
-            "Valor": [
-                formatar_numero(VZ_rec, 1),
-                formatar_numero(Vol_estatico, 1),
-                formatar_numero(T_retorno, 1),
-                formatar_numero(T_bacia, 1),
-                formatar_numero(perc_arraste, 2),
-                formatar_numero(perc_utilizacao, 1),
-                formatar_numero(ciclos, 2)
-            ],
-            "Unidade": [
-                "m³/h",
-                "m³",
-                "°C",
-                "°C",
-                "%",
-                "%",
-                "vezes"
-            ]
-        })
-        
-        # Usar st.dataframe com formatação personalizada
-        st.dataframe(
-            dados_entrada,
-            column_config={
-                "Parâmetro": st.column_config.Column(
-                    "Parâmetro",
-                    width="medium",
-                ),
-                "Valor": st.column_config.Column(
-                    "Valor",
-                    width="small",
-                ),
-                "Unidade": st.column_config.Column(
-                    "Unidade",
-                    width="small",
-                )
-            },
-            hide_index=True,
-            use_container_width=True
-        )
-        
+        # Criar tabela com markdown simples
+        tabela_entrada = f"""
+| Parâmetro | Valor | Unidade |
+|---|---|---|
+| **Vazão de Recirculação** | {formatar_numero(VZ_rec, 1)} | m³/h |
+| **Volume Estático** | {formatar_numero(Vol_estatico, 1)} | m³ |
+| **Temperatura de Retorno** | {formatar_numero(T_retorno, 1)} | °C |
+| **Temperatura da Bacia** | {formatar_numero(T_bacia, 1)} | °C |
+| **% Arraste** | {formatar_numero(perc_arraste, 2)} | % |
+| **% Utilização** | {formatar_numero(perc_utilizacao, 1)} | % |
+| **Ciclos de Concentração** | {formatar_numero(ciclos, 2)} | vezes |
+"""
+        st.markdown(tabela_entrada, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # Tabela 2: Resultados do Cálculo - USANDO MARKDOWN SIMPLES
+        st.markdown('<div class="info-card secao-resultados">', unsafe_allow_html=True)
+        st.markdown('<div class="info-card-title" style="margin-top: 0; padding-top: 0;">📈 RESULTADOS DO CÁLCULO</div>', unsafe_allow_html=True)
         
-        # Tabela 2: Resultados do Cálculo
-        st.markdown('<div class="info-card secao-resultados" style="margin-top: 25px;">', unsafe_allow_html=True)
-        st.markdown('<div class="info-card-title">📈 RESULTADOS DO CÁLCULO</div>', unsafe_allow_html=True)
-        
-        dados_resultados = pd.DataFrame({
-            "Parâmetro": [
-                "ΔT (Redução de Temperatura)",
-                "Evaporação",
-                "Perda Líquida Total", 
-                "Reposição Total",
-                "HTI (Tempo de Retenção)"
-            ],
-            "Valor": [
-                formatar_numero(delta_T, 2),
-                formatar_numero(evaporacao, 2),
-                formatar_numero(perda_liquida, 2),
-                formatar_numero(reposicao, 2),
-                formatar_numero(HTI, 2)
-            ],
-            "Unidade": [
-                "°C",
-                "m³/h",
-                "m³/h",
-                "m³/h",
-                "horas"
-            ]
-        })
-        
-        st.dataframe(
-            dados_resultados,
-            column_config={
-                "Parâmetro": st.column_config.Column(
-                    "Parâmetro",
-                    width="medium",
-                ),
-                "Valor": st.column_config.Column(
-                    "Valor",
-                    width="small",
-                ),
-                "Unidade": st.column_config.Column(
-                    "Unidade",
-                    width="small",
-                )
-            },
-            hide_index=True,
-            use_container_width=True
-        )
-        
+        tabela_resultados = f"""
+| Parâmetro | Valor | Unidade |
+|---|---|---|
+| **ΔT (Redução de Temperatura)** | {formatar_numero(delta_T, 2)} | °C |
+| **Evaporação** | {formatar_numero(evaporacao, 2)} | m³/h |
+| **Perda Líquida Total** | {formatar_numero(perda_liquida, 2)} | m³/h |
+| **Reposição Total** | {formatar_numero(reposicao, 2)} | m³/h |
+| **HTI (Tempo de Retenção)** | {formatar_numero(HTI, 2)} | horas |
+"""
+        st.markdown(tabela_resultados, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # Tabela 3: Detalhamento das Perdas - USANDO MARKDOWN SIMPLES
+        st.markdown('<div class="info-card secao-perdas">', unsafe_allow_html=True)
+        st.markdown('<div class="info-card-title" style="margin-top: 0; padding-top: 0;">📉 DETALHAMENTO DAS PERDAS</div>', unsafe_allow_html=True)
         
-        # Tabela 3: Detalhamento das Perdas
-        st.markdown('<div class="info-card secao-perdas" style="margin-top: 25px;">', unsafe_allow_html=True)
-        st.markdown('<div class="info-card-title">📉 DETALHAMENTO DAS PERDAS</div>', unsafe_allow_html=True)
-        
-        dados_perdas = pd.DataFrame({
-            "Tipo de Perda": [
-                "Perda por Arraste",
-                "Purga do Sistema", 
-                "Perda Líquida Total"
-            ],
-            "Valor": [
-                formatar_numero(perda_arraste, 2),
-                formatar_numero(purgas, 2),
-                formatar_numero(perda_liquida, 2)
-            ],
-            "Unidade": [
-                "m³/h",
-                "m³/h", 
-                "m³/h"
-            ],
-            "Observação": [
-                f"({formatar_numero(perc_arraste, 2)}% da vazão de recirculação)",
-                "(Controle de qualidade da água)",
-                "(Soma: Arraste + Purga)"
-            ]
-        })
-        
-        st.dataframe(
-            dados_perdas,
-            column_config={
-                "Tipo de Perda": st.column_config.Column(
-                    "Tipo de Perda",
-                    width="medium",
-                ),
-                "Valor": st.column_config.Column(
-                    "Valor",
-                    width="small",
-                ),
-                "Unidade": st.column_config.Column(
-                    "Unidade",
-                    width="small",
-                ),
-                "Observação": st.column_config.Column(
-                    "Observação",
-                    width="large",
-                )
-            },
-            hide_index=True,
-            use_container_width=True
-        )
-        
+        tabela_perdas = f"""
+| Tipo de Perda | Valor | Unidade | Observação |
+|---|---|---|---|
+| **Perda por Arraste** | {formatar_numero(perda_arraste, 2)} | m³/h | ({formatar_numero(perc_arraste, 2)}% da vazão de recirculação) |
+| **Purga do Sistema** | {formatar_numero(purgas, 2)} | m³/h | (Controle de qualidade da água) |
+| **Perda Líquida Total** | {formatar_numero(perda_liquida, 2)} | m³/h | (Soma: Arraste + Purga) |
+"""
+        st.markdown(tabela_perdas, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Balanço Hídrico Destacado
