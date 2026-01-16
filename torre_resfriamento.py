@@ -668,6 +668,7 @@ if st.session_state.calcular:
         st.markdown('<div class="info-card secao-dados">', unsafe_allow_html=True)
         st.markdown('<div class="info-card-title">📥 DADOS DE ENTRADA</div>', unsafe_allow_html=True)
         
+        # Usar st.table ou st.dataframe em vez de HTML
         dados_entrada = pd.DataFrame({
             "Parâmetro": [
                 "Vazão de Recirculação",
@@ -691,40 +692,34 @@ if st.session_state.calcular:
                 "m³/h",
                 "m³",
                 "°C",
-                "°C",  # Corrigido aqui
+                "°C",
                 "%",
                 "%",
                 "vezes"
             ]
         })
         
-        html_table = """
-        <table class="dados-table">
-            <thead>
-                <tr>
-                    <th>Parâmetro</th>
-                    <th style="text-align: center;">Valor</th>
-                    <th style="text-align: center;">Unidade</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
+        # Usar st.dataframe com formatação personalizada
+        st.dataframe(
+            dados_entrada,
+            column_config={
+                "Parâmetro": st.column_config.Column(
+                    "Parâmetro",
+                    width="medium",
+                ),
+                "Valor": st.column_config.Column(
+                    "Valor",
+                    width="small",
+                ),
+                "Unidade": st.column_config.Column(
+                    "Unidade",
+                    width="small",
+                )
+            },
+            hide_index=True,
+            use_container_width=True
+        )
         
-        for _, row in dados_entrada.iterrows():
-            html_table += f"""
-                <tr>
-                    <td>{row['Parâmetro']}</td>
-                    <td class="valor-cell">{row['Valor']}</td>
-                    <td class="unidade-cell">{row['Unidade']}</td>
-                </tr>
-            """
-        
-        html_table += """
-            </tbody>
-        </table>
-        """
-        
-        st.markdown(html_table, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Tabela 2: Resultados do Cálculo
@@ -755,33 +750,26 @@ if st.session_state.calcular:
             ]
         })
         
-        html_table2 = """
-        <table class="dados-table">
-            <thead>
-                <tr>
-                    <th>Parâmetro</th>
-                    <th style="text-align: center;">Valor</th>
-                    <th style="text-align: center;">Unidade</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
+        st.dataframe(
+            dados_resultados,
+            column_config={
+                "Parâmetro": st.column_config.Column(
+                    "Parâmetro",
+                    width="medium",
+                ),
+                "Valor": st.column_config.Column(
+                    "Valor",
+                    width="small",
+                ),
+                "Unidade": st.column_config.Column(
+                    "Unidade",
+                    width="small",
+                )
+            },
+            hide_index=True,
+            use_container_width=True
+        )
         
-        for _, row in dados_resultados.iterrows():
-            html_table2 += f"""
-                <tr>
-                    <td>{row['Parâmetro']}</td>
-                    <td class="valor-cell">{row['Valor']}</td>
-                    <td class="unidade-cell">{row['Unidade']}</td>
-                </tr>
-            """
-        
-        html_table2 += """
-            </tbody>
-        </table>
-        """
-        
-        st.markdown(html_table2, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Tabela 3: Detalhamento das Perdas
@@ -811,35 +799,30 @@ if st.session_state.calcular:
             ]
         })
         
-        html_table3 = """
-        <table class="dados-table">
-            <thead>
-                <tr>
-                    <th>Tipo de Perda</th>
-                    <th style="text-align: center;">Valor</th>
-                    <th style="text-align: center;">Unidade</th>
-                    <th>Observação</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
+        st.dataframe(
+            dados_perdas,
+            column_config={
+                "Tipo de Perda": st.column_config.Column(
+                    "Tipo de Perda",
+                    width="medium",
+                ),
+                "Valor": st.column_config.Column(
+                    "Valor",
+                    width="small",
+                ),
+                "Unidade": st.column_config.Column(
+                    "Unidade",
+                    width="small",
+                ),
+                "Observação": st.column_config.Column(
+                    "Observação",
+                    width="large",
+                )
+            },
+            hide_index=True,
+            use_container_width=True
+        )
         
-        for _, row in dados_perdas.iterrows():
-            html_table3 += f"""
-                <tr>
-                    <td>{row['Tipo de Perda']}</td>
-                    <td class="valor-cell">{row['Valor']}</td>
-                    <td class="unidade-cell">{row['Unidade']}</td>
-                    <td style="font-size: 14px; color: #666;">{row['Observação']}</td>
-                </tr>
-            """
-        
-        html_table3 += """
-            </tbody>
-        </table>
-        """
-        
-        st.markdown(html_table3, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Balanço Hídrico Destacado
